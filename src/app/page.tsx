@@ -1,207 +1,228 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Upload, Star } from 'lucide-react';
+import { Upload, Star, Sparkles } from 'lucide-react';
 
-const categories = [
+const heroStyles = [
+  { name: 'Cute Cartoon', emoji: '🥰', bg: 'from-pink-100 to-rose-100' },
+  { name: 'Funny Meme', emoji: '🤪', bg: 'from-yellow-100 to-orange-100' },
+  { name: 'Unusual Everyday', emoji: '✨', bg: 'from-purple-100 to-indigo-100' },
+];
+
+const styleCategories = [
   {
-    name: 'Cute',
-    subtitle: 'for loved ones',
-    icons: ['💝', '🥰', '💕', '🌸', '🦋'],
+    title: 'Meme version for fun',
+    stickers: ['😂', '🤣', '😎', '🤪', '😜'],
+    color: 'from-yellow-50 to-amber-50',
   },
   {
-    name: 'Funny',
-    subtitle: 'for friends',
-    icons: ['😂', '🤪', '😎', '🎉', '🎈'],
+    title: 'Cute version for your love',
+    stickers: ['💕', '🥰', '💝', '🌸', '🦋'],
+    color: 'from-pink-50 to-rose-50',
   },
   {
-    name: 'Unusual',
-    subtitle: 'for everyday',
-    icons: ['✨', '🌈', '🎨', '🦄', '🌙'],
+    title: 'Unusual for everyday occasions',
+    stickers: ['✨', '🎨', '🌈', '🦄', '🌙'],
+    color: 'from-purple-50 to-indigo-50',
   },
 ];
 
-const exampleImages = [
-  '💝', '🎉', '🌸', '😎', '🦋', '🎨', '🥰', '✨'
-];
-
-function CategoryButton({ category }: { category: typeof categories[0] }) {
-  const [currentIconIndex, setCurrentIconIndex] = useState(0);
+function DynamicHeroPreview() {
+  const [currentStyleIndex, setCurrentStyleIndex] = useState(0);
+  const [fadeState, setFadeState] = useState('fade-in');
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIconIndex((prev) => (prev + 1) % category.icons.length);
+      setFadeState('fade-out');
+      setTimeout(() => {
+        setCurrentStyleIndex((prev) => (prev + 1) % heroStyles.length);
+        setFadeState('fade-in');
+      }, 300);
     }, 1500);
-
-    return () => clearInterval(interval);
-  }, [category.icons.length]);
-
-  return (
-    <button
-      className="group flex w-full items-center gap-4 rounded-2xl bg-white/60 p-5 transition-all duration-300 hover:bg-white hover:shadow-md active:scale-[0.98]"
-    >
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm transition-all duration-300">
-        <span className="text-3xl transition-all duration-500">
-          {category.icons[currentIconIndex]}
-        </span>
-      </div>
-
-      <div className="flex flex-col items-start">
-        <span className="text-lg font-semibold text-gray-900">
-          {category.name}
-        </span>
-        <span className="text-sm text-gray-600">
-          {category.subtitle}
-        </span>
-      </div>
-    </button>
-  );
-}
-
-function ImageCarousel() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % exampleImages.length);
-    }, 2000);
 
     return () => clearInterval(interval);
   }, []);
 
+  const currentStyle = heroStyles[currentStyleIndex];
+
   return (
-    <div className="grid grid-cols-4 gap-3">
-      {exampleImages.map((emoji, idx) => (
-        <div
-          key={idx}
-          className={`flex aspect-square items-center justify-center rounded-2xl bg-white shadow-sm transition-all duration-500 ${
-            idx === currentIndex ? 'scale-110 shadow-lg' : 'scale-100'
-          }`}
-        >
-          <span className="text-4xl">{emoji}</span>
+    <div className="relative h-80 w-full overflow-hidden rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl">
+      <div
+        className={`flex h-full w-full items-center justify-center bg-gradient-to-br ${currentStyle.bg} transition-opacity duration-300 ${
+          fadeState === 'fade-in' ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <span className="text-9xl drop-shadow-lg">{currentStyle.emoji}</span>
+          <p className="rounded-full bg-white/80 px-6 py-2 text-sm font-semibold tracking-tight text-gray-800 shadow-md backdrop-blur-sm">
+            {currentStyle.name}
+          </p>
         </div>
-      ))}
+      </div>
+    </div>
+  );
+}
+
+function StyleCategoryCard({ category }: { category: typeof styleCategories[0] }) {
+  const [currentStickerIndex, setCurrentStickerIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentStickerIndex((prev) => (prev + 1) % category.stickers.length);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [category.stickers.length]);
+
+  return (
+    <div className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+      <div className={`bg-gradient-to-br ${category.color} p-6`}>
+        <div className="mb-6 flex h-32 items-center justify-center">
+          <div className="grid grid-cols-3 gap-3">
+            {category.stickers.slice(0, 3).map((sticker, idx) => (
+              <div
+                key={idx}
+                className={`flex h-16 w-16 items-center justify-center rounded-xl bg-white shadow-sm transition-all duration-500 ${
+                  idx === currentStickerIndex % 3 ? 'scale-110' : 'scale-100'
+                }`}
+              >
+                <span className="text-3xl">{sticker}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <h3 className="mb-4 text-center text-lg font-bold tracking-tight text-gray-900">
+          {category.title}
+        </h3>
+
+        <button className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-all duration-300 hover:border-gray-400 hover:bg-gray-50 active:scale-[0.98]">
+          Create
+        </button>
+      </div>
     </div>
   );
 }
 
 export default function Home() {
-  const [isDragging, setIsDragging] = useState(false);
-
   return (
-    <div className="min-h-screen bg-[#FFF0F0]" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <div className="mx-auto flex max-w-[500px] flex-col gap-12 px-6 py-12">
+    <div className="min-h-screen bg-[#FAFAFA]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      <div className="mx-auto flex max-w-[600px] flex-col gap-12 px-6 py-12">
 
-        <header className="flex flex-col gap-8 text-center">
-          <h1 className="text-5xl font-bold leading-tight text-gray-900">
-            turn any photo into a personalized sticker! ✨
+        {/* Dynamic Hero Preview */}
+        <div className="flex flex-col gap-8">
+          <DynamicHeroPreview />
+
+          {/* Main Headline */}
+          <h1 className="text-center text-5xl font-bold leading-[1.1] tracking-tight text-gray-900 md:text-6xl">
+            Turn your photo<br />
+            <span className="bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              INTO A STICKER!
+            </span>
           </h1>
 
-          <ImageCarousel />
-
-          <p className="text-lg text-gray-700">
-            <span className="font-semibold">551,289</span> photos turned into stickers! 🎉
-          </p>
-        </header>
-
-        <section className="flex flex-col gap-8">
-          <div
-            className={`group relative cursor-pointer rounded-3xl bg-white p-12 transition-all duration-300 ${
-              isDragging
-                ? 'shadow-2xl ring-4 ring-blue-300'
-                : 'shadow-lg hover:shadow-xl'
-            }`}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setIsDragging(false);
-            }}
-          >
-            <div className="flex flex-col items-center gap-6 text-center">
-              <div className={`rounded-full p-6 transition-all duration-300 ${
-                isDragging ? 'bg-blue-100' : 'bg-pink-100'
-              }`}>
-                <Upload className={`h-10 w-10 transition-colors duration-300 ${
-                  isDragging ? 'text-blue-600' : 'text-pink-600'
-                }`} strokeWidth={2.5} />
+          {/* Primary CTA with pulse animation */}
+          <div className="flex justify-center">
+            <button className="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 px-10 py-4 font-bold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95">
+              <div className="absolute inset-0 animate-pulse bg-white opacity-0 group-hover:opacity-20"></div>
+              <div className="flex items-center gap-3">
+                <Upload className="h-6 w-6" strokeWidth={2.5} />
+                <span className="text-lg tracking-tight">Upload Photo</span>
               </div>
-
-              <div className="space-y-2">
-                <p className="text-2xl font-bold text-gray-900">
-                  click here to upload!
-                </p>
-                <p className="text-base text-gray-600">
-                  or drag and drop your photo
-                </p>
-              </div>
-            </div>
+            </button>
           </div>
+        </div>
 
-          <div className="flex flex-col gap-4">
-            <label htmlFor="prompt" className="text-base font-semibold text-gray-900">
-              describe your style (optional)
-            </label>
-            <textarea
-              id="prompt"
-              rows={3}
-              placeholder="make it vibrant and cartoon-style..."
-              className="w-full rounded-2xl border-0 bg-white px-5 py-4 text-gray-900 shadow-md placeholder-gray-400 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-pink-200"
-            />
-          </div>
-        </section>
-
+        {/* Style Category Cards */}
         <section className="flex flex-col gap-6">
-          <h2 className="text-center text-2xl font-bold text-gray-900">
-            choose your vibe
+          <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
+            Choose your style
           </h2>
 
-          <div className="flex flex-col gap-3">
-            {categories.map((category) => (
-              <CategoryButton key={category.name} category={category} />
+          <div className="flex flex-col gap-4">
+            {styleCategories.map((category, idx) => (
+              <StyleCategoryCard key={idx} category={category} />
             ))}
           </div>
         </section>
 
-        <section className="flex flex-col gap-6 rounded-3xl bg-white/60 p-8">
-          <h3 className="text-center text-xl font-bold text-gray-900">
-            what people are saying
-          </h3>
+        {/* Social Proof - Reviews */}
+        <section className="flex flex-col gap-8">
+          <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900">
+            What our creators say
+          </h2>
 
           <div className="flex flex-col gap-4">
             {[
-              { name: 'Sarah M.', text: 'absolutely love my stickers! so cute and high quality 💕', avatar: '🙋‍♀️' },
-              { name: 'Mike T.', text: 'perfect gift for my girlfriend, she was so happy!', avatar: '👨' },
-              { name: 'Emma L.', text: 'the cutest stickers ever! ordering more soon', avatar: '🙋' },
+              {
+                name: 'Sarah Johnson',
+                role: 'Content Creator',
+                text: 'The quality is incredible! My stickers look professional and the turnaround was super fast.',
+                avatar: '👩‍💼',
+                rating: 5,
+              },
+              {
+                name: 'Mike Chen',
+                role: 'Designer',
+                text: 'Best sticker service I've used. The AI transforms photos perfectly while keeping the original vibe.',
+                avatar: '👨‍🎨',
+                rating: 5,
+              },
+              {
+                name: 'Emma Rodriguez',
+                role: 'Small Business Owner',
+                text: 'My customers love these! I use them for packaging and they add such a personal touch.',
+                avatar: '👩‍💻',
+                rating: 5,
+              },
             ].map((review, idx) => (
-              <div key={idx} className="rounded-2xl bg-white p-5 shadow-sm">
-                <div className="mb-2 flex items-center gap-3">
-                  <span className="text-2xl">{review.avatar}</span>
+              <div
+                key={idx}
+                className="overflow-hidden rounded-2xl border border-gray-200 bg-white/60 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+              >
+                <div className="mb-4 flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-gray-100 to-gray-200 text-2xl shadow-sm">
+                    {review.avatar}
+                  </div>
                   <div className="flex-1">
-                    <p className="font-semibold text-gray-900">{review.name}</p>
-                    <div className="flex gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
+                    <p className="font-semibold tracking-tight text-gray-900">{review.name}</p>
+                    <p className="text-sm text-gray-600">{review.role}</p>
+                  </div>
+                  <div className="flex gap-0.5">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    ))}
                   </div>
                 </div>
-                <p className="text-gray-700">{review.text}</p>
+                <p className="leading-relaxed text-gray-700">{review.text}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <footer className="flex flex-col gap-4 py-8 text-center text-sm text-gray-600">
-          <p>made with ❤️ for sticker lovers everywhere</p>
-          <div className="flex justify-center gap-6">
-            <a href="#" className="hover:text-gray-900">contact</a>
-            <a href="#" className="hover:text-gray-900">privacy</a>
-            <a href="#" className="hover:text-gray-900">terms</a>
+        {/* Secondary CTA */}
+        <div className="flex flex-col items-center gap-6 rounded-3xl border border-gray-200 bg-white p-10 shadow-sm">
+          <Sparkles className="h-12 w-12 text-purple-500" strokeWidth={2} />
+          <h3 className="text-center text-2xl font-bold tracking-tight text-gray-900">
+            Ready to create your stickers?
+          </h3>
+          <p className="text-center text-gray-600">
+            Upload your photo and transform it in seconds
+          </p>
+          <button className="rounded-xl bg-gray-900 px-8 py-3 font-semibold tracking-tight text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-gray-800 active:scale-95">
+            Get Started
+          </button>
+        </div>
+
+        {/* Footer */}
+        <footer className="border-t border-gray-200 pt-8 text-center">
+          <div className="mb-4 flex justify-center gap-8 text-sm">
+            <a href="#" className="text-gray-600 transition-colors hover:text-gray-900">About</a>
+            <a href="#" className="text-gray-600 transition-colors hover:text-gray-900">Contact</a>
+            <a href="#" className="text-gray-600 transition-colors hover:text-gray-900">Privacy</a>
+            <a href="#" className="text-gray-600 transition-colors hover:text-gray-900">Terms</a>
           </div>
+          <p className="text-sm text-gray-500">© 2024 CustomStickerPack. All rights reserved.</p>
         </footer>
 
       </div>
