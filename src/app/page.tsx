@@ -164,7 +164,7 @@ export default function Home() {
               {
                 name: 'Mike Chen',
                 role: 'Designer',
-                text: 'Best sticker service I've used. The AI transforms photos perfectly while keeping the original vibe.',
+                text: `Best sticker service I've used. The AI transforms photos perfectly while keeping the original vibe.`,
                 avatar: '👨‍🎨',
                 rating: 5,
               },
