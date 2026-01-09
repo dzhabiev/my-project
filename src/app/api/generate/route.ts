@@ -17,6 +17,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('Checking FAL_KEY:', process.env.FAL_KEY ? 'Key exists' : 'Key missing');
+    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('FAL')));
+
     if (!process.env.FAL_KEY) {
       return NextResponse.json(
         { error: 'FAL_KEY not configured' },
