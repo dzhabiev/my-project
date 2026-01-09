@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Star, Quote } from 'lucide-react';
 
@@ -184,6 +184,64 @@ function CategoryCard({ category }: { category: typeof styleCategories[0] }) {
 }
 
 export default function Home() {
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [generatedSticker, setGeneratedSticker] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUploadedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleGenerate = async () => {
+    if (!uploadedImage) return;
+
+    setIsGenerating(true);
+    setGeneratedSticker(null); // Clear previous result
+
+    try {
+      console.log('Sending request to generate sticker...');
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image: uploadedImage }),
+      });
+
+      const data = await response.json();
+      console.log("Response from FAL:", data);
+
+      if (!response.ok) {
+        console.error('Full error response:', data);
+        const errorMsg = data.fullError?.message || data.details || data.error || 'Failed to generate sticker';
+        throw new Error(errorMsg);
+      }
+
+      console.log('Received generated sticker URL:', data.image);
+      console.log('Setting generatedSticker state to:', data.image);
+      setGeneratedSticker(data.image);
+    } catch (error) {
+      console.error('Error generating sticker:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Displaying error to user:', errorMessage);
+      alert(`Failed to generate sticker: ${errorMessage}. Check console for details.`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div
       className="min-h-screen bg-gradient-to-b from-white to-gray-50"
@@ -218,7 +276,15 @@ export default function Home() {
           </div>
 
           {/* Main CTA with Pink Glow */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
           <motion.button
+            onClick={handleUploadClick}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] px-12 py-5 text-xl font-bold text-white shadow-[0_20px_50px_rgba(255,77,77,0.4)] transition-all hover:shadow-[0_25px_60px_rgba(255,77,77,0.5)]"
@@ -238,6 +304,99 @@ export default function Home() {
             </div>
             <span>by 150K+ users</span>
           </div>
+
+          {/* Image Preview and Generate Button */}
+          {uploadedImage && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full rounded-3xl border border-gray-200 bg-white p-8 shadow-lg"
+            >
+              <h3 className="mb-4 text-center text-xl font-bold text-gray-900">
+                Your Uploaded Image
+              </h3>
+              <div className="mb-6 flex justify-center">
+                <img
+                  src={uploadedImage}
+                  alt="Uploaded"
+                  className="max-h-64 rounded-xl border-4 border-gray-100 object-contain"
+                />
+              </div>
+              <motion.button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                whileHover={{ scale: isGenerating ? 1 : 1.05 }}
+                whileTap={{ scale: isGenerating ? 1 : 0.95 }}
+                className="w-full rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] px-8 py-4 text-lg font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isGenerating ? 'Generating Your Sticker...' : 'Generate Sticker!'}
+              </motion.button>
+
+              {/* Processing Indicator */}
+              {isGenerating && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-4 text-center"
+                >
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="mx-auto mb-2 h-8 w-8 rounded-full border-4 border-gray-200 border-t-[#FF4D4D]"
+                  />
+                  <p className="text-xl font-bold text-[#FF4D4D]">
+                    AI is drawing...
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-gray-600">
+                    The AI is creating your custom sticker
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    This may take 10-30 seconds
+                  </p>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Generated Sticker Display */}
+          {generatedSticker && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-full rounded-3xl border-4 border-[#FF4D4D] bg-white p-8 shadow-2xl"
+            >
+              <h3 className="mb-4 text-center text-2xl font-bold text-gray-900">
+                Your Custom Sticker!
+              </h3>
+
+              {/* Image container with visible background */}
+              <div className="mb-4 flex justify-center rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 p-8 border-4 border-dashed border-gray-400">
+                <img
+                  src={generatedSticker}
+                  alt="Generated Sticker"
+                  className="max-h-96 max-w-full rounded-xl object-contain"
+                  onLoad={() => console.log('Image loaded successfully from:', generatedSticker)}
+                  onError={(e) => console.error('Image failed to load:', generatedSticker, e)}
+                  crossOrigin="anonymous"
+                />
+              </div>
+
+              {/* Download Link */}
+              <div className="text-center">
+                <a
+                  href={generatedSticker}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800 transition-colors"
+                >
+                  [Download Link]
+                </a>
+                <p className="mt-2 text-xs text-gray-500 break-all">
+                  {generatedSticker}
+                </p>
+              </div>
+            </motion.div>
+          )}
         </section>
 
         {/* Category Cards - Bento Style */}
