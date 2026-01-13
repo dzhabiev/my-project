@@ -75,7 +75,7 @@ function StickerPreview({ color, label, size = 'md' }: { color: string; label: s
   const sizeClasses = {
     sm: 'h-16 w-16 text-lg',
     md: 'h-24 w-24 text-2xl',
-    lg: 'h-40 w-40 text-5xl',
+    lg: 'h-32 w-32 text-4xl md:h-40 md:w-40 md:text-5xl',
   };
 
   return (
@@ -105,7 +105,7 @@ function HeroSticker() {
   }, []);
 
   return (
-    <div className="relative flex h-64 w-full items-center justify-center">
+    <div className="relative flex h-48 w-full items-center justify-center md:h-64">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
@@ -125,7 +125,7 @@ function HeroSticker() {
               size="lg"
             />
           </motion.div>
-          <p className="mt-4 text-center text-sm font-semibold text-gray-600">
+          <p className="mt-3 text-center text-xs font-semibold text-gray-600 md:mt-4 md:text-sm">
             {heroImages[currentIndex].style}
           </p>
         </motion.div>
@@ -307,16 +307,16 @@ export default function Home() {
         <div className="absolute right-0 top-2/3 h-px w-40 bg-gradient-to-l from-transparent via-pink-200 to-transparent opacity-30"></div>
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-[600px] px-6 py-16 md:py-24">
+      <div className="relative z-10 mx-auto w-full max-w-[600px] px-4 py-8 md:px-6 md:py-16">
 
         {/* Hero Section */}
-        <section className="mb-20 flex flex-col items-center gap-8">
+        <section className="mb-12 flex flex-col items-center gap-4 md:mb-20 md:gap-8">
           {/* Hero Sticker Animation */}
           <HeroSticker />
 
           {/* Headline */}
           <div className="text-center">
-            <h1 className="mb-4 text-5xl font-extrabold leading-[0.95] tracking-[-0.05em] text-gray-900 md:text-7xl">
+            <h1 className="mb-3 text-4xl font-extrabold leading-[0.95] tracking-[-0.05em] text-gray-900 md:mb-4 md:text-6xl">
               Turn Your Photo<br />
               <span className="bg-gradient-to-r from-[#FF4D4D] to-[#F96161] bg-clip-text text-transparent">
                 INTO A STICKER!
@@ -328,9 +328,9 @@ export default function Home() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="mb-8 inline-flex items-center gap-2 rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-900"
+              className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 md:mb-6 md:px-4 md:py-2 md:text-sm"
             >
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              <Star className="h-3 w-3 fill-amber-400 text-amber-400 md:h-4 md:w-4" />
               Loved by 150K+ users
             </motion.div>
           </div>
@@ -347,19 +347,19 @@ export default function Home() {
             onClick={handleUploadClick}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] px-12 py-5 text-xl font-bold text-white shadow-[0_20px_50px_rgba(255,77,77,0.4)] transition-all hover:shadow-[0_25px_60px_rgba(255,77,77,0.5)]"
+            className="rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] px-8 py-3 text-base font-bold text-white shadow-[0_10px_30px_rgba(255,77,77,0.4)] transition-all hover:shadow-[0_15px_40px_rgba(255,77,77,0.5)] md:px-12 md:py-5 md:text-xl"
           >
-            <div className="flex items-center gap-3">
-              <Upload className="h-6 w-6" strokeWidth={3} />
+            <div className="flex items-center gap-2 md:gap-3">
+              <Upload className="h-5 w-5 md:h-6 md:w-6" strokeWidth={3} />
               Upload photo
             </div>
           </motion.button>
 
           {/* Secondary Trust */}
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-1.5 text-xs text-gray-500 md:gap-2 md:text-sm">
             <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400 md:h-3.5 md:w-3.5" />
               ))}
             </div>
             <span>by 150K+ users</span>
@@ -370,16 +370,16 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full rounded-3xl border border-gray-200 bg-white p-8 shadow-lg"
+              className="w-full rounded-2xl border border-gray-200 bg-white p-4 shadow-lg md:rounded-3xl md:p-8"
             >
-              <h3 className="mb-4 text-center text-xl font-bold text-gray-900">
+              <h3 className="mb-3 text-center text-lg font-bold text-gray-900 md:mb-4 md:text-xl">
                 Your Uploaded Image
               </h3>
-              <div className="mb-6 flex justify-center">
+              <div className="mb-4 flex justify-center md:mb-6">
                 <img
                   src={uploadedImage}
                   alt="Uploaded"
-                  className="max-h-64 rounded-xl border-4 border-gray-100 object-contain"
+                  className="max-h-48 rounded-lg border-2 border-gray-100 object-contain md:max-h-64 md:rounded-xl md:border-4"
                 />
               </div>
               <motion.button
@@ -387,7 +387,7 @@ export default function Home() {
                 disabled={isGenerating}
                 whileHover={{ scale: isGenerating ? 1 : 1.05 }}
                 whileTap={{ scale: isGenerating ? 1 : 0.95 }}
-                className="w-full rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] px-8 py-4 text-lg font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] px-6 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 md:px-8 md:py-4 md:text-lg"
               >
                 {isGenerating ? 'Generating Your Sticker...' : 'Generate Sticker!'}
               </motion.button>
@@ -460,35 +460,35 @@ export default function Home() {
         </section>
 
         {/* How It Works Section */}
-        <section className="mb-20">
-          <h2 className="mb-8 text-center text-4xl font-bold tracking-tight text-gray-900">
+        <section className="mb-12 md:mb-20">
+          <h2 className="mb-4 text-center text-3xl font-bold tracking-tight text-gray-900 md:mb-8 md:text-4xl">
             How it works
           </h2>
 
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-4 md:gap-8">
             {/* Step 1 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="flex flex-col gap-4 rounded-3xl bg-gradient-to-br from-purple-50 to-pink-50 p-8"
+              className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-lg font-bold text-white">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
                   1
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Upload Your Photo</h3>
+                <h3 className="text-lg font-bold text-gray-900 md:text-2xl">Upload Your Photo</h3>
               </div>
-              <p className="text-gray-600">
+              <p className="text-sm text-gray-600 md:text-base">
                 Choose any photo of yourself, a friend, or even your pet! Our AI works with all kinds of images.
               </p>
               <motion.div
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="mt-4 flex justify-center"
+                className="mt-2 flex justify-center md:mt-4"
               >
-                <div className="rounded-xl bg-white p-4 shadow-lg">
-                  <Upload className="h-16 w-16 text-[#FF4D4D]" />
+                <div className="rounded-xl bg-white p-3 shadow-lg md:p-4">
+                  <Upload className="h-12 w-12 text-[#FF4D4D] md:h-16 md:w-16" />
                 </div>
               </motion.div>
             </motion.div>
@@ -499,39 +499,39 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="flex flex-col gap-4 rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-50 p-8"
+              className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-lg font-bold text-white">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
                   2
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">AI Magic Happens</h3>
+                <h3 className="text-lg font-bold text-gray-900 md:text-2xl">AI Magic Happens</h3>
               </div>
-              <p className="text-gray-600">
+              <p className="text-sm text-gray-600 md:text-base">
                 Our advanced AI transforms your photo into a professional vector sticker with vibrant colors and clean lines.
               </p>
-              <div className="mt-4 flex items-center justify-center gap-6">
+              <div className="mt-2 flex items-center justify-center gap-3 md:mt-4 md:gap-6">
                 <motion.div
-                  className="rounded-xl border-4 border-white bg-gray-200 p-6 shadow-lg"
+                  className="rounded-lg border-2 border-white bg-gray-200 p-3 shadow-lg md:rounded-xl md:border-4 md:p-6"
                   animate={{ rotate: [0, -5, 5, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <div className="h-20 w-20 rounded-lg bg-gradient-to-br from-gray-300 to-gray-400"></div>
+                  <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-gray-300 to-gray-400 md:h-20 md:w-20"></div>
                 </motion.div>
                 <motion.div
                   animate={{ x: [0, 10, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
-                  className="text-4xl"
+                  className="text-2xl md:text-4xl"
                 >
                   →
                 </motion.div>
                 <motion.div
-                  className="rounded-xl border-4 border-white p-6 shadow-lg"
+                  className="rounded-lg border-2 border-white p-3 shadow-lg md:rounded-xl md:border-4 md:p-6"
                   style={{ backgroundColor: '#FFB6E1' }}
                   animate={{ rotate: [0, 5, -5, 0] }}
                   transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
                 >
-                  <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gradient-to-br from-pink-400 to-purple-400 text-4xl">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-pink-400 to-purple-400 text-2xl md:h-20 md:w-20 md:text-4xl">
                     ✨
                   </div>
                 </motion.div>
@@ -544,24 +544,24 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
-              className="flex flex-col gap-4 rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50 p-8"
+              className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-lg font-bold text-white">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
                   3
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900">Download & Enjoy</h3>
+                <h3 className="text-lg font-bold text-gray-900 md:text-2xl">Download & Enjoy</h3>
               </div>
-              <p className="text-gray-600">
+              <p className="text-sm text-gray-600 md:text-base">
                 Get your high-quality sticker instantly! Use it anywhere - social media, messaging apps, or print it out.
               </p>
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="mt-4 flex justify-center"
+                className="mt-2 flex justify-center md:mt-4"
               >
-                <div className="rounded-xl bg-white p-4 shadow-lg">
-                  <Star className="h-16 w-16 fill-amber-400 text-amber-400" />
+                <div className="rounded-xl bg-white p-3 shadow-lg md:p-4">
+                  <Star className="h-12 w-12 fill-amber-400 text-amber-400 md:h-16 md:w-16" />
                 </div>
               </motion.div>
             </motion.div>
@@ -569,12 +569,12 @@ export default function Home() {
         </section>
 
         {/* Testimonials Section */}
-        <section className="mb-20">
-          <h2 className="mb-8 text-center text-4xl font-bold tracking-tight text-gray-900">
+        <section className="mb-12 md:mb-20">
+          <h2 className="mb-4 text-center text-3xl font-bold tracking-tight text-gray-900 md:mb-8 md:text-4xl">
             What our creators say
           </h2>
 
-          <div className="flex flex-col gap-6 md:grid md:grid-cols-1">
+          <div className="flex flex-col gap-4 md:grid md:grid-cols-1 md:gap-6">
             {testimonials.map((testimonial, idx) => (
               <motion.div
                 key={idx}
@@ -583,13 +583,13 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
                 whileHover={{ y: -5 }}
-                className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md md:rounded-2xl md:p-6"
               >
-                <div className="mb-4 flex items-start justify-between">
-                  <div className="flex items-center gap-4">
+                <div className="mb-3 flex items-start justify-between md:mb-4">
+                  <div className="flex items-center gap-3 md:gap-4">
                     {/* Avatar */}
                     <div
-                      className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white"
+                      className="flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold text-white md:h-12 md:w-12 md:text-sm"
                       style={{ backgroundColor: testimonial.color }}
                     >
                       {testimonial.avatar}
@@ -597,24 +597,24 @@ export default function Home() {
 
                     {/* Name and role */}
                     <div>
-                      <p className="font-bold text-gray-900">{testimonial.name}</p>
-                      <p className="text-sm text-gray-600">{testimonial.role}</p>
+                      <p className="text-sm font-bold text-gray-900 md:text-base">{testimonial.name}</p>
+                      <p className="text-xs text-gray-600 md:text-sm">{testimonial.role}</p>
                     </div>
                   </div>
 
                   {/* Quote icon */}
-                  <Quote className="h-6 w-6 text-gray-300" />
+                  <Quote className="h-5 w-5 text-gray-300 md:h-6 md:w-6" />
                 </div>
 
                 {/* Stars */}
-                <div className="mb-3 flex gap-0.5">
+                <div className="mb-2 flex gap-0.5 md:mb-3">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400 md:h-4 md:w-4" />
                   ))}
                 </div>
 
                 {/* Testimonial text */}
-                <p className="leading-relaxed text-gray-700">{testimonial.text}</p>
+                <p className="text-sm leading-relaxed text-gray-700 md:text-base">{testimonial.text}</p>
               </motion.div>
             ))}
           </div>
@@ -625,27 +625,27 @@ export default function Home() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mb-16 rounded-3xl border border-gray-200 bg-white p-12 text-center shadow-sm"
+          className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm md:mb-12 md:rounded-3xl md:p-12"
         >
-          <h3 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">
+          <h3 className="mb-3 text-2xl font-bold tracking-tight text-gray-900 md:mb-4 md:text-3xl">
             Ready to create your stickers?
           </h3>
-          <p className="mb-8 text-gray-600">
+          <p className="mb-6 text-sm text-gray-600 md:mb-8 md:text-base">
             Join 150K+ happy creators and transform your photos in seconds
           </p>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="rounded-full bg-gray-900 px-10 py-4 text-lg font-bold text-white shadow-lg transition-all hover:bg-gray-800"
+            className="rounded-full bg-gray-900 px-8 py-3 text-base font-bold text-white shadow-lg transition-all hover:bg-gray-800 md:px-10 md:py-4 md:text-lg"
           >
             Get Started Free
           </motion.button>
         </motion.section>
 
         {/* Footer */}
-        <footer className="border-t border-gray-200 pt-8 text-center">
-          <div className="mb-4 flex justify-center gap-8 text-sm font-medium">
+        <footer className="border-t border-gray-200 pt-6 text-center md:pt-8">
+          <div className="mb-3 flex justify-center gap-4 text-xs font-medium md:mb-4 md:gap-8 md:text-sm">
             <a href="#" className="text-gray-600 transition-colors hover:text-gray-900">
               About
             </a>
@@ -659,7 +659,7 @@ export default function Home() {
               Terms
             </a>
           </div>
-          <p className="text-sm text-gray-500">© 2024 CustomStickerPack. All rights reserved.</p>
+          <p className="text-xs text-gray-500 md:text-sm">© 2024 CustomStickerPack. All rights reserved.</p>
         </footer>
 
       </div>
