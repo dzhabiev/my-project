@@ -278,23 +278,23 @@ export default function Home() {
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50"
+      className="relative min-h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-50"
       style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif' }}
     >
       {/* Decorative Background Elements */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         {/* Dots Pattern */}
-        <div className="absolute left-10 top-20 h-3 w-3 rounded-full bg-purple-200 opacity-40"></div>
-        <div className="absolute left-20 top-40 h-2 w-2 rounded-full bg-pink-200 opacity-50"></div>
-        <div className="absolute left-32 top-60 h-4 w-4 rounded-full bg-blue-200 opacity-30"></div>
-        <div className="absolute right-10 top-32 h-3 w-3 rounded-full bg-amber-200 opacity-40"></div>
-        <div className="absolute right-24 top-56 h-2 w-2 rounded-full bg-rose-200 opacity-50"></div>
-        <div className="absolute right-16 top-80 h-4 w-4 rounded-full bg-cyan-200 opacity-30"></div>
+        <div className="absolute left-10 top-20 h-3 w-3 rounded-full bg-blue-300 opacity-40"></div>
+        <div className="absolute left-20 top-40 h-2 w-2 rounded-full bg-cyan-300 opacity-50"></div>
+        <div className="absolute left-32 top-60 h-4 w-4 rounded-full bg-indigo-300 opacity-30"></div>
+        <div className="absolute right-10 top-32 h-3 w-3 rounded-full bg-sky-300 opacity-40"></div>
+        <div className="absolute right-24 top-56 h-2 w-2 rounded-full bg-blue-400 opacity-50"></div>
+        <div className="absolute right-16 top-80 h-4 w-4 rounded-full bg-cyan-300 opacity-30"></div>
 
         {/* Larger decorative circles */}
-        <div className="absolute -left-20 top-1/4 h-40 w-40 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 opacity-20 blur-3xl"></div>
-        <div className="absolute -right-20 top-1/3 h-48 w-48 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 opacity-20 blur-3xl"></div>
-        <div className="absolute bottom-1/4 left-10 h-36 w-36 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 opacity-20 blur-3xl"></div>
+        <div className="absolute -left-20 top-1/4 h-40 w-40 rounded-full bg-gradient-to-br from-blue-200 to-cyan-200 opacity-20 blur-3xl"></div>
+        <div className="absolute -right-20 top-1/3 h-48 w-48 rounded-full bg-gradient-to-br from-indigo-200 to-blue-200 opacity-20 blur-3xl"></div>
+        <div className="absolute bottom-1/4 left-10 h-36 w-36 rounded-full bg-gradient-to-br from-cyan-200 to-sky-200 opacity-20 blur-3xl"></div>
 
         {/* Symbols */}
         <div className="absolute left-16 bottom-40 text-3xl opacity-10">✨</div>
@@ -303,8 +303,8 @@ export default function Home() {
         <div className="absolute right-32 top-1/4 text-3xl opacity-10">💫</div>
 
         {/* Stripes/Lines */}
-        <div className="absolute left-0 top-1/3 h-px w-32 bg-gradient-to-r from-transparent via-purple-200 to-transparent opacity-30"></div>
-        <div className="absolute right-0 top-2/3 h-px w-40 bg-gradient-to-l from-transparent via-pink-200 to-transparent opacity-30"></div>
+        <div className="absolute left-0 top-1/3 h-px w-32 bg-gradient-to-r from-transparent via-blue-300 to-transparent opacity-30"></div>
+        <div className="absolute right-0 top-2/3 h-px w-40 bg-gradient-to-l from-transparent via-cyan-300 to-transparent opacity-30"></div>
       </div>
 
       <div className="relative z-10 mx-auto w-full max-w-[600px] px-4 py-8 md:px-6 md:py-16">
@@ -318,7 +318,7 @@ export default function Home() {
           <div className="text-center">
             <h1 className="mb-3 text-4xl font-extrabold leading-[0.95] tracking-[-0.05em] text-gray-900 md:mb-4 md:text-6xl">
               Turn Your Photo<br />
-              <span className="bg-gradient-to-r from-[#FF4D4D] to-[#F96161] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] bg-clip-text text-transparent">
                 INTO A STICKER!
               </span>
             </h1>
@@ -347,7 +347,7 @@ export default function Home() {
             onClick={handleUploadClick}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] px-8 py-3 text-base font-bold text-white shadow-[0_10px_30px_rgba(255,77,77,0.4)] transition-all hover:shadow-[0_15px_40px_rgba(255,77,77,0.5)] md:px-12 md:py-5 md:text-xl"
+            className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-base font-bold text-white shadow-[0_10px_30px_rgba(59,130,246,0.4)] transition-all hover:shadow-[0_15px_40px_rgba(59,130,246,0.5)] md:px-12 md:py-5 md:text-xl"
           >
             <div className="flex items-center gap-2 md:gap-3">
               <Upload className="h-5 w-5 md:h-6 md:w-6" strokeWidth={3} />
@@ -387,7 +387,7 @@ export default function Home() {
                 disabled={isGenerating}
                 whileHover={{ scale: isGenerating ? 1 : 1.05 }}
                 whileTap={{ scale: isGenerating ? 1 : 0.95 }}
-                className="w-full rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] px-6 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 md:px-8 md:py-4 md:text-lg"
+                className="w-full rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-6 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 md:px-8 md:py-4 md:text-lg"
               >
                 {isGenerating ? 'Generating Your Sticker...' : 'Generate Sticker!'}
               </motion.button>
@@ -402,9 +402,9 @@ export default function Home() {
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="mx-auto mb-2 h-8 w-8 rounded-full border-4 border-gray-200 border-t-[#FF4D4D]"
+                    className="mx-auto mb-2 h-8 w-8 rounded-full border-4 border-gray-200 border-t-[#3B82F6]"
                   />
-                  <p className="text-xl font-bold text-[#FF4D4D]">
+                  <p className="text-xl font-bold text-[#3B82F6]">
                     AI is drawing...
                   </p>
                   <p className="mt-2 text-sm font-semibold text-gray-600">
@@ -423,7 +423,7 @@ export default function Home() {
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full rounded-3xl border-4 border-[#FF4D4D] bg-white p-8 shadow-2xl"
+              className="w-full rounded-3xl border-4 border-[#3B82F6] bg-white p-8 shadow-2xl"
             >
               <h3 className="mb-4 text-center text-2xl font-bold text-gray-900">
                 Your Custom Sticker!
@@ -471,10 +471,10 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
+              className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
             >
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
                   1
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 md:text-2xl">Upload Your Photo</h3>
@@ -488,7 +488,7 @@ export default function Home() {
                 className="mt-2 flex justify-center md:mt-4"
               >
                 <div className="rounded-xl bg-white p-3 shadow-lg md:p-4">
-                  <Upload className="h-12 w-12 text-[#FF4D4D] md:h-16 md:w-16" />
+                  <Upload className="h-12 w-12 text-[#3B82F6] md:h-16 md:w-16" />
                 </div>
               </motion.div>
             </motion.div>
@@ -502,7 +502,7 @@ export default function Home() {
               className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
             >
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
                   2
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 md:text-2xl">AI Magic Happens</h3>
@@ -527,11 +527,11 @@ export default function Home() {
                 </motion.div>
                 <motion.div
                   className="rounded-lg border-2 border-white p-3 shadow-lg md:rounded-xl md:border-4 md:p-6"
-                  style={{ backgroundColor: '#FFB6E1' }}
+                  style={{ backgroundColor: '#93C5FD' }}
                   animate={{ rotate: [0, 5, -5, 0] }}
                   transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
                 >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-pink-400 to-purple-400 text-2xl md:h-20 md:w-20 md:text-4xl">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-cyan-400 text-2xl md:h-20 md:w-20 md:text-4xl">
                     ✨
                   </div>
                 </motion.div>
@@ -544,10 +544,10 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
-              className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
+              className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
             >
               <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
                   3
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 md:text-2xl">Download & Enjoy</h3>
@@ -637,7 +637,7 @@ export default function Home() {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="rounded-full bg-gray-900 px-8 py-3 text-base font-bold text-white shadow-lg transition-all hover:bg-gray-800 md:px-10 md:py-4 md:text-lg"
+            className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl md:px-10 md:py-4 md:text-lg"
           >
             Get Started Free
           </motion.button>
