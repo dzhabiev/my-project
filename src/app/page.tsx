@@ -278,10 +278,36 @@ export default function Home() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-white to-gray-50"
+      className="relative min-h-screen overflow-hidden bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50"
       style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif' }}
     >
-      <div className="mx-auto w-full max-w-[600px] px-6 py-16 md:py-24">
+      {/* Decorative Background Elements */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        {/* Dots Pattern */}
+        <div className="absolute left-10 top-20 h-3 w-3 rounded-full bg-purple-200 opacity-40"></div>
+        <div className="absolute left-20 top-40 h-2 w-2 rounded-full bg-pink-200 opacity-50"></div>
+        <div className="absolute left-32 top-60 h-4 w-4 rounded-full bg-blue-200 opacity-30"></div>
+        <div className="absolute right-10 top-32 h-3 w-3 rounded-full bg-amber-200 opacity-40"></div>
+        <div className="absolute right-24 top-56 h-2 w-2 rounded-full bg-rose-200 opacity-50"></div>
+        <div className="absolute right-16 top-80 h-4 w-4 rounded-full bg-cyan-200 opacity-30"></div>
+
+        {/* Larger decorative circles */}
+        <div className="absolute -left-20 top-1/4 h-40 w-40 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 opacity-20 blur-3xl"></div>
+        <div className="absolute -right-20 top-1/3 h-48 w-48 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 opacity-20 blur-3xl"></div>
+        <div className="absolute bottom-1/4 left-10 h-36 w-36 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 opacity-20 blur-3xl"></div>
+
+        {/* Symbols */}
+        <div className="absolute left-16 bottom-40 text-3xl opacity-10">✨</div>
+        <div className="absolute right-20 bottom-60 text-2xl opacity-10">⭐</div>
+        <div className="absolute left-24 top-1/2 text-4xl opacity-10">🎨</div>
+        <div className="absolute right-32 top-1/4 text-3xl opacity-10">💫</div>
+
+        {/* Stripes/Lines */}
+        <div className="absolute left-0 top-1/3 h-px w-32 bg-gradient-to-r from-transparent via-purple-200 to-transparent opacity-30"></div>
+        <div className="absolute right-0 top-2/3 h-px w-40 bg-gradient-to-l from-transparent via-pink-200 to-transparent opacity-30"></div>
+      </div>
+
+      <div className="relative z-10 mx-auto w-full max-w-[600px] px-6 py-16 md:py-24">
 
         {/* Hero Section */}
         <section className="mb-20 flex flex-col items-center gap-8">
@@ -325,7 +351,7 @@ export default function Home() {
           >
             <div className="flex items-center gap-3">
               <Upload className="h-6 w-6" strokeWidth={3} />
-              Click Here To Upload!
+              Upload photo
             </div>
           </motion.button>
 
@@ -433,16 +459,112 @@ export default function Home() {
           )}
         </section>
 
-        {/* Category Cards - Bento Style */}
+        {/* How It Works Section */}
         <section className="mb-20">
           <h2 className="mb-8 text-center text-4xl font-bold tracking-tight text-gray-900">
-            Choose Your Style
+            How it works
           </h2>
 
-          <div className="flex flex-col gap-6">
-            {styleCategories.map((category, idx) => (
-              <CategoryCard key={idx} category={category} />
-            ))}
+          <div className="flex flex-col gap-8">
+            {/* Step 1 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex flex-col gap-4 rounded-3xl bg-gradient-to-br from-purple-50 to-pink-50 p-8"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-lg font-bold text-white">
+                  1
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Upload Your Photo</h3>
+              </div>
+              <p className="text-gray-600">
+                Choose any photo of yourself, a friend, or even your pet! Our AI works with all kinds of images.
+              </p>
+              <motion.div
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="mt-4 flex justify-center"
+              >
+                <div className="rounded-xl bg-white p-4 shadow-lg">
+                  <Upload className="h-16 w-16 text-[#FF4D4D]" />
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Step 2 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-col gap-4 rounded-3xl bg-gradient-to-br from-blue-50 to-cyan-50 p-8"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-lg font-bold text-white">
+                  2
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">AI Magic Happens</h3>
+              </div>
+              <p className="text-gray-600">
+                Our advanced AI transforms your photo into a professional vector sticker with vibrant colors and clean lines.
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-6">
+                <motion.div
+                  className="rounded-xl border-4 border-white bg-gray-200 p-6 shadow-lg"
+                  animate={{ rotate: [0, -5, 5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <div className="h-20 w-20 rounded-lg bg-gradient-to-br from-gray-300 to-gray-400"></div>
+                </motion.div>
+                <motion.div
+                  animate={{ x: [0, 10, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="text-4xl"
+                >
+                  →
+                </motion.div>
+                <motion.div
+                  className="rounded-xl border-4 border-white p-6 shadow-lg"
+                  style={{ backgroundColor: '#FFB6E1' }}
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                >
+                  <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-gradient-to-br from-pink-400 to-purple-400 text-4xl">
+                    ✨
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
+
+            {/* Step 3 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-col gap-4 rounded-3xl bg-gradient-to-br from-amber-50 to-orange-50 p-8"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#FF4D4D] to-[#F96161] text-lg font-bold text-white">
+                  3
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900">Download & Enjoy</h3>
+              </div>
+              <p className="text-gray-600">
+                Get your high-quality sticker instantly! Use it anywhere - social media, messaging apps, or print it out.
+              </p>
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="mt-4 flex justify-center"
+              >
+                <div className="rounded-xl bg-white p-4 shadow-lg">
+                  <Star className="h-16 w-16 fill-amber-400 text-amber-400" />
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
