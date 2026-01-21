@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         guidance_scale: 10,
       },
       logs: true,
-      onQueueUpdate: (update) => {
+      onQueueUpdate: (update: any) => {
         console.log('Queue update:', update.status);
       },
     });
