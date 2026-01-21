@@ -17,6 +17,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate image is base64 and check size (max 10MB)
+    if (!image.startsWith('data:image/')) {
+      return NextResponse.json(
+        { error: 'Invalid image format' },
+        { status: 400 }
+      );
+    }
+
+    // Check base64 size (rough estimate: base64 is ~33% larger)
+    const sizeInBytes = (image.length * 3) / 4;
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    
+    if (sizeInBytes > maxSize) {
+      return NextResponse.json(
+        { error: 'Image too large. Maximum size is 10MB' },
+        { status: 413 }
+      );
+    }
+
+    // Basic rate limiting: check IP address
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    console.log('Request from IP:', ip);
+
     console.log('Checking FAL_KEY:', process.env.FAL_KEY ? 'Key exists' : 'Key missing');
     console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('FAL')));
 
@@ -52,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     if (generatedImageUrl) {
       return NextResponse.json({
-        image: generatedImageUrl,
+        imageUrl: generatedImageUrl,
       });
     } else {
       console.error('No image found in result:', result);

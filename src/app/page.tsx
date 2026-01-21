@@ -187,7 +187,43 @@ export default function Home() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [generatedSticker, setGeneratedSticker] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showStickersModal, setShowStickersModal] = useState(false);
+  const [savedStickers, setSavedStickers] = useState<string[]>([]); // Stores URLs
+  const [selectedStickerIndex, setSelectedStickerIndex] = useState(0);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check for admin code in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const adminCode = urlParams.get('admin');
+    if (adminCode === process.env.NEXT_PUBLIC_ADMIN_CODE) {
+      setIsAdmin(true);
+      console.log('🔓 Admin mode activated');
+    }
+  }, []);
+
+  // Load saved sticker URLs from localStorage on mount
+  useEffect(() => {
+    try {
+      const stickers = localStorage.getItem('savedStickers');
+      if (stickers) {
+        const parsed = JSON.parse(stickers);
+        // Validate URLs to prevent XSS
+        if (Array.isArray(parsed)) {
+          const validUrls = parsed.filter((url: string) => 
+            typeof url === 'string' && 
+            (url.startsWith('https://v3b.fal.media/') || url.startsWith('http://localhost'))
+          );
+          setSavedStickers(validUrls);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading stickers:', error);
+      localStorage.removeItem('savedStickers');
+    }
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -263,9 +299,37 @@ export default function Home() {
         throw new Error(errorMsg);
       }
 
-      console.log('Received generated sticker URL:', data.image);
-      console.log('Setting generatedSticker state to:', data.image);
-      setGeneratedSticker(data.image);
+      console.log('Received sticker URL:', data.imageUrl);
+      
+      // Validate URL before saving
+      if (!data.imageUrl || typeof data.imageUrl !== 'string' || !data.imageUrl.startsWith('https://v3b.fal.media/')) {
+        throw new Error('Invalid sticker URL received');
+      }
+      
+      setGeneratedSticker(data.imageUrl);
+      
+      // Save sticker URL to localStorage with validation
+      try {
+        const stickers = localStorage.getItem('savedStickers');
+        const existingStickers = stickers ? JSON.parse(stickers) : [];
+        
+        // Validate existing stickers
+        const validStickers = Array.isArray(existingStickers) 
+          ? existingStickers.filter((url: string) => 
+              typeof url === 'string' && url.startsWith('https://v3b.fal.media/')
+            )
+          : [];
+        
+        const updatedStickers = [...validStickers, data.imageUrl];
+        localStorage.setItem('savedStickers', JSON.stringify(updatedStickers));
+        setSavedStickers(updatedStickers);
+        setSelectedStickerIndex(updatedStickers.length - 1);
+      } catch (storageError) {
+        console.error('Error saving to localStorage:', storageError);
+      }
+      
+      // Show stickers modal after generation
+      setTimeout(() => setShowStickersModal(true), 500);
     } catch (error) {
       console.error('Error generating sticker:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -273,6 +337,50 @@ export default function Home() {
       alert(`Failed to generate sticker: ${errorMessage}. Check console for details.`);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleUnlockSticker = async () => {
+    if (savedStickers.length === 0) return;
+
+    setIsProcessingPayment(true);
+
+    try {
+      const stickerUrl = savedStickers[selectedStickerIndex];
+      
+      const response = await fetch('/api/payment/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          stickerUrl: stickerUrl,
+          amount: 3.00,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Payment creation failed:', data);
+        throw new Error(data.error || data.message || 'Failed to create payment');
+      }
+
+      console.log('Payment created:', data);
+
+      // Open payment page in new window
+      if (data.paymentUrl) {
+        window.open(data.paymentUrl, '_blank');
+        alert('Payment window opened! Complete the payment to unlock your sticker.');
+      } else {
+        // Show payment details for manual payment
+        alert(`Payment created!\nAmount: ${data.payAmount} ${data.payCurrency}\nAddress: ${data.payAddress}\n\nSend payment to unlock your sticker.`);
+      }
+    } catch (error) {
+      console.error('Error creating payment:', error);
+      alert(`Failed to create payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -307,16 +415,30 @@ export default function Home() {
         <div className="absolute right-0 top-2/3 h-px w-40 bg-gradient-to-l from-transparent via-cyan-300 to-transparent opacity-30"></div>
       </div>
 
-      <div className="relative z-10 mx-auto w-full max-w-[600px] px-4 py-8 md:px-6 md:py-16">
+      {/* Fixed View My Stickers Button - Top Right */}
+      {savedStickers.length > 0 && (
+        <motion.button
+          onClick={() => setShowStickersModal(true)}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="fixed right-4 top-4 z-40 rounded-full border-2 border-[#3B82F6] bg-white px-4 py-2 text-sm font-bold text-[#3B82F6] shadow-lg transition-all hover:bg-[#3B82F6] hover:text-white md:px-6 md:py-3 md:text-base"
+        >
+          View My Stickers
+        </motion.button>
+      )}
+
+      <div className="relative z-10 mx-auto w-full max-w-[600px] px-4 py-6 md:px-6 md:py-10">
 
         {/* Hero Section */}
-        <section className="mb-12 flex flex-col items-center gap-4 md:mb-20 md:gap-8">
+        <section className="mb-8 flex flex-col items-center gap-3 md:mb-12 md:gap-5">
           {/* Hero Sticker Animation */}
           <HeroSticker />
 
           {/* Headline */}
           <div className="text-center">
-            <h1 className="mb-3 text-4xl font-extrabold leading-[0.95] tracking-[-0.05em] text-gray-900 md:mb-4 md:text-6xl">
+            <h1 className="mb-2 text-4xl font-extrabold leading-[0.95] tracking-[-0.05em] text-gray-900 md:mb-3 md:text-6xl">
               Turn Your Photo<br />
               <span className="bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] bg-clip-text text-transparent">
                 INTO A STICKER!
@@ -328,7 +450,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="mb-4 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 md:mb-6 md:px-4 md:py-2 md:text-sm"
+              className="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 md:mb-4 md:px-4 md:py-2 md:text-sm"
             >
               <Star className="h-3 w-3 fill-amber-400 text-amber-400 md:h-4 md:w-4" />
               Loved by 150K+ users
@@ -392,80 +514,18 @@ export default function Home() {
                 {isGenerating ? 'Generating Your Sticker...' : 'Generate Sticker!'}
               </motion.button>
 
-              {/* Processing Indicator */}
-              {isGenerating && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="mt-4 text-center"
-                >
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="mx-auto mb-2 h-8 w-8 rounded-full border-4 border-gray-200 border-t-[#3B82F6]"
-                  />
-                  <p className="text-xl font-bold text-[#3B82F6]">
-                    AI is drawing...
-                  </p>
-                  <p className="mt-2 text-sm font-semibold text-gray-600">
-                    The AI is creating your custom sticker
-                  </p>
-                  <p className="mt-1 text-xs text-gray-500">
-                    This may take 10-30 seconds
-                  </p>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
 
-          {/* Generated Sticker Display */}
-          {generatedSticker && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full rounded-3xl border-4 border-[#3B82F6] bg-white p-8 shadow-2xl"
-            >
-              <h3 className="mb-4 text-center text-2xl font-bold text-gray-900">
-                Your Custom Sticker!
-              </h3>
-
-              {/* Image container with visible background */}
-              <div className="mb-4 flex justify-center rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 p-8 border-4 border-dashed border-gray-400">
-                <img
-                  src={generatedSticker}
-                  alt="Generated Sticker"
-                  className="max-h-96 max-w-full rounded-xl object-contain"
-                  onLoad={() => console.log('Image loaded successfully from:', generatedSticker)}
-                  onError={(e) => console.error('Image failed to load:', generatedSticker, e)}
-                  crossOrigin="anonymous"
-                />
-              </div>
-
-              {/* Download Link */}
-              <div className="text-center">
-                <a
-                  href={generatedSticker}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block rounded-lg bg-gray-900 px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800 transition-colors"
-                >
-                  [Download Link]
-                </a>
-                <p className="mt-2 text-xs text-gray-500 break-all">
-                  {generatedSticker}
-                </p>
-              </div>
             </motion.div>
           )}
         </section>
 
         {/* How It Works Section */}
-        <section className="mb-12 md:mb-20">
-          <h2 className="mb-4 text-center text-3xl font-bold tracking-tight text-gray-900 md:mb-8 md:text-4xl">
+        <section className="mb-8 md:mb-12">
+          <h2 className="mb-3 text-center text-3xl font-bold tracking-tight text-gray-900 md:mb-5 md:text-4xl">
             How it works
           </h2>
 
-          <div className="flex flex-col gap-4 md:gap-8">
+          <div className="flex flex-col gap-3 md:gap-5">
             {/* Step 1 */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -512,11 +572,16 @@ export default function Home() {
               </p>
               <div className="mt-2 flex items-center justify-center gap-3 md:mt-4 md:gap-6">
                 <motion.div
-                  className="rounded-lg border-2 border-white bg-gray-200 p-3 shadow-lg md:rounded-xl md:border-4 md:p-6"
+                  className="overflow-hidden rounded-lg border-2 border-white shadow-lg md:rounded-xl md:border-4"
                   animate={{ rotate: [0, -5, 5, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <div className="h-14 w-14 rounded-lg bg-gradient-to-br from-gray-300 to-gray-400 md:h-20 md:w-20"></div>
+                  <img
+                    src="/examples/before.jpg"
+                    alt="Before"
+                    className="h-14 w-14 object-cover md:h-20 md:w-20"
+                    style={{ objectPosition: 'center 5%' }}
+                  />
                 </motion.div>
                 <motion.div
                   animate={{ x: [0, 10, 0] }}
@@ -526,14 +591,16 @@ export default function Home() {
                   →
                 </motion.div>
                 <motion.div
-                  className="rounded-lg border-2 border-white p-3 shadow-lg md:rounded-xl md:border-4 md:p-6"
-                  style={{ backgroundColor: '#93C5FD' }}
+                  className="overflow-hidden rounded-lg border-2 border-white shadow-lg md:rounded-xl md:border-4"
                   animate={{ rotate: [0, 5, -5, 0] }}
                   transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
                 >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br from-blue-400 to-cyan-400 text-2xl md:h-20 md:w-20 md:text-4xl">
-                    ✨
-                  </div>
+                  <img
+                    src="/examples/after.jpg"
+                    alt="After"
+                    className="h-14 w-14 object-cover md:h-20 md:w-20"
+                    style={{ objectPosition: 'center 5%' }}
+                  />
                 </motion.div>
               </div>
             </motion.div>
@@ -569,12 +636,12 @@ export default function Home() {
         </section>
 
         {/* Testimonials Section */}
-        <section className="mb-12 md:mb-20">
-          <h2 className="mb-4 text-center text-3xl font-bold tracking-tight text-gray-900 md:mb-8 md:text-4xl">
+        <section className="mb-8 md:mb-12">
+          <h2 className="mb-3 text-center text-3xl font-bold tracking-tight text-gray-900 md:mb-5 md:text-4xl">
             What our creators say
           </h2>
 
-          <div className="flex flex-col gap-4 md:grid md:grid-cols-1 md:gap-6">
+          <div className="flex flex-col gap-3 md:grid md:grid-cols-1 md:gap-4">
             {testimonials.map((testimonial, idx) => (
               <motion.div
                 key={idx}
@@ -625,12 +692,12 @@ export default function Home() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mb-8 rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm md:mb-12 md:rounded-3xl md:p-12"
+          className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm md:mb-8 md:rounded-3xl md:p-10"
         >
-          <h3 className="mb-3 text-2xl font-bold tracking-tight text-gray-900 md:mb-4 md:text-3xl">
+          <h3 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 md:mb-3 md:text-3xl">
             Ready to create your stickers?
           </h3>
-          <p className="mb-6 text-sm text-gray-600 md:mb-8 md:text-base">
+          <p className="mb-4 text-sm text-gray-600 md:mb-5 md:text-base">
             Join 150K+ happy creators and transform your photos in seconds
           </p>
 
@@ -644,7 +711,7 @@ export default function Home() {
         </motion.section>
 
         {/* Footer */}
-        <footer className="border-t border-gray-200 pt-6 text-center md:pt-8">
+        <footer className="border-t border-gray-200 pt-4 text-center md:pt-6">
           <div className="mb-3 flex justify-center gap-4 text-xs font-medium md:mb-4 md:gap-8 md:text-sm">
             <a href="#" className="text-gray-600 transition-colors hover:text-gray-900">
               About
@@ -663,6 +730,238 @@ export default function Home() {
         </footer>
 
       </div>
+
+      {/* Generation Overlay Modal */}
+      <AnimatePresence>
+        {isGenerating && uploadedImage && !showStickersModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Generating state */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative mx-4 max-w-md overflow-hidden rounded-3xl bg-gradient-to-br from-pink-50 to-orange-50 p-8 shadow-2xl"
+            >
+              <div className="mb-6 flex justify-center">
+                <motion.img
+                  src={uploadedImage}
+                  alt="Generating"
+                  className="h-64 w-64 rounded-2xl object-cover shadow-lg"
+                  animate={{ scale: [1, 1.02, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+              </div>
+
+              {/* Floating sticker emojis */}
+              <motion.div
+                className="absolute left-8 top-12 text-4xl"
+                animate={{ y: [0, -10, 0], rotate: [0, 10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, delay: 0 }}
+              >
+                🎨
+              </motion.div>
+              <motion.div
+                className="absolute right-8 top-16 text-3xl"
+                animate={{ y: [0, -15, 0], rotate: [0, -10, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
+              >
+                ✨
+              </motion.div>
+              <motion.div
+                className="absolute right-12 bottom-32 text-3xl"
+                animate={{ y: [0, -12, 0], rotate: [0, 15, 0] }}
+                transition={{ duration: 2.2, repeat: Infinity, delay: 1 }}
+              >
+                🔥
+              </motion.div>
+
+              {/* Text */}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="mb-6 text-center"
+              >
+                <h3 className="mb-1 text-2xl font-black text-gray-900">
+                  Making your{' '}
+                  <span className="bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] bg-clip-text text-transparent">
+                    sticker
+                  </span>{' '}
+                  now!
+                </h3>
+              </motion.div>
+
+              {/* Progress Bar */}
+              <div className="relative h-3 overflow-hidden rounded-full bg-white shadow-inner">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4]"
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{ duration: 25, ease: "linear" }}
+                />
+              </div>
+
+              {/* Subtitle */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-4 text-center text-sm font-medium text-gray-600"
+              >
+                This may take 10-30 seconds ⏱️
+              </motion.p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* My Stickers Modal */}
+      <AnimatePresence>
+        {showStickersModal && savedStickers.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowStickersModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative mx-4 w-full max-w-sm overflow-hidden rounded-2xl bg-gradient-to-br from-pink-50 to-orange-50 p-4 shadow-2xl"
+            >
+              {/* Header */}
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-900">Your Custom Stickers</h2>
+                <button
+                  onClick={() => setShowStickersModal(false)}
+                  className="flex h-7 w-7 items-center justify-center rounded-full bg-white/50 text-gray-600 hover:bg-white transition-colors text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Alert */}
+              <div className="mb-3 rounded-lg bg-gradient-to-r from-blue-100 to-cyan-100 border border-[#3B82F6] px-3 py-2 flex items-center gap-2">
+                <span className="text-[#3B82F6] text-base">🔒</span>
+                <p className="text-xs font-semibold text-[#3B82F6]">
+                  You have {savedStickers.length} sticker{savedStickers.length > 1 ? 's' : ''} waiting for you!
+                </p>
+              </div>
+
+              {/* Storage Warning */}
+              <div className="mb-3 px-1">
+                <p className="text-[9px] text-gray-400">
+                  Notice: Stickers are saved on this device only • Won't sync to other devices
+                </p>
+              </div>
+
+              {/* Sticker Gallery - Thumbnails */}
+              <div className="mb-3 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {savedStickers.map((stickerUrl, index) => (
+                  <motion.button
+                    key={index}
+                    onClick={() => setSelectedStickerIndex(index)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`relative flex-shrink-0 h-14 w-14 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedStickerIndex === index
+                        ? 'border-[#3B82F6] ring-2 ring-[#3B82F6] ring-offset-2'
+                        : 'border-white/50'
+                    }`}
+                  >
+                    <img
+                      src={`/api/proxy-image?url=${encodeURIComponent(stickerUrl)}`}
+                      alt={`Sticker ${index + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                    {selectedStickerIndex === index && (
+                      <div className="absolute inset-0 bg-[#3B82F6]/20"></div>
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+
+              {/* Selected Sticker Display */}
+              <div className="mb-4 rounded-xl bg-white p-4">
+                <div className="relative">
+                  <img
+                    src={`/api/proxy-image?url=${encodeURIComponent(savedStickers[selectedStickerIndex])}`}
+                    alt="Generated Sticker"
+                    className={`w-full rounded-lg object-contain ${isAdmin ? '' : 'blur-sm'}`}
+                  />
+                  
+                  {/* Lock Overlay - Hidden for Admin */}
+                  {!isAdmin && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="absolute inset-0 flex flex-col items-center justify-center"
+                    >
+                      <motion.div
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-2xl"
+                      >
+                        <svg
+                          className="h-6 w-6 text-gray-900"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                          />
+                        </svg>
+                      </motion.div>
+                      <div className="rounded-full bg-white px-3 py-1 shadow-lg">
+                        <p className="text-xs font-bold text-gray-900">Locked</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              </div>
+
+              {/* Payment Button - Hidden for Admin */}
+              {!isAdmin && (
+                <div>
+                  <motion.button
+                    onClick={handleUnlockSticker}
+                    disabled={isProcessingPayment}
+                    whileHover={{ scale: isProcessingPayment ? 1 : 1.02 }}
+                    whileTap={{ scale: isProcessingPayment ? 1 : 0.98 }}
+                    className="w-full rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-5 py-3 text-base font-semibold text-white shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    {isProcessingPayment ? 'Processing...' : 'Unlock now ($3.00)'}
+                  </motion.button>
+                </div>
+              )}
+
+              {/* Admin Badge */}
+              {isAdmin && (
+                <div className="flex items-center justify-center gap-2 rounded-lg bg-green-100 px-4 py-2">
+                  <span className="text-lg">🔓</span>
+                  <p className="text-sm font-semibold text-green-700">Admin Mode - Free Access</p>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
