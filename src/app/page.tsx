@@ -521,7 +521,7 @@ export default function Home() {
             onClick={() => setShowHowItWorksModal(true)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl md:px-12 md:py-4 md:text-lg"
+            className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-base font-bold text-white shadow-[0_10px_30px_rgba(59,130,246,0.4)] transition-all hover:shadow-[0_15px_40px_rgba(59,130,246,0.5)] md:px-12 md:py-4 md:text-lg"
           >
             Learn How It Works →
           </motion.button>
