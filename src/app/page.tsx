@@ -196,6 +196,7 @@ export default function Home() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadSectionRef = useRef<HTMLDivElement>(null);
 
   // Check for admin code in URL
   useEffect(() => {
@@ -275,6 +276,10 @@ export default function Home() {
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleScrollToUpload = () => {
+    uploadSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleGenerate = async () => {
@@ -432,7 +437,7 @@ export default function Home() {
         </motion.button>
       )}
 
-      <div className="relative z-10 mx-auto w-full max-w-[600px] px-4 py-6 md:px-6 md:py-10">
+      <div ref={uploadSectionRef} className="relative z-10 mx-auto w-full max-w-[600px] px-4 py-6 md:px-6 md:py-10">
 
         {/* Hero Section */}
         <section className="mb-8 flex flex-col items-center gap-3 md:mb-12 md:gap-5">
@@ -596,11 +601,12 @@ export default function Home() {
           </p>
 
           <motion.button
+            onClick={handleScrollToUpload}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl md:px-10 md:py-4 md:text-lg"
           >
-            Get Started Free
+            Get Started
           </motion.button>
         </motion.section>
 
