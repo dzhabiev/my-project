@@ -932,7 +932,7 @@ export default function Home() {
                     <div className="text-2xl font-bold text-[#3B82F6]">→</div>
                     <div className="overflow-hidden rounded-lg border-2 border-white shadow-lg">
                       <img
-                        src="/examples/after.jpg"
+                        src="/examples/after.jpeg"
                         alt="After"
                         className="h-20 w-20 object-cover"
                         style={{ objectPosition: 'center 5%' }}
