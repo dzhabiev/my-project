@@ -191,6 +191,7 @@ export default function Home() {
   const [generatedSticker, setGeneratedSticker] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showStickersModal, setShowStickersModal] = useState(false);
+  const [showHowItWorksModal, setShowHowItWorksModal] = useState(false);
   const [savedStickers, setSavedStickers] = useState<string[]>([]); // Stores URLs
   const [selectedStickerIndex, setSelectedStickerIndex] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -529,9 +530,14 @@ export default function Home() {
 
         {/* How It Works Link */}
         <div className="mb-8 md:mb-12 flex justify-center">
-          <a href="/how-it-works" className="inline-block rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-lg font-bold text-white shadow-lg transition-all hover:shadow-xl hover:scale-105">
+          <motion.button
+            onClick={() => setShowHowItWorksModal(true)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-block rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-lg font-bold text-white shadow-lg transition-all hover:shadow-xl"
+          >
             Learn How It Works →
-          </a>
+          </motion.button>
         </div>
 
         {/* Testimonials Section */}
@@ -858,6 +864,99 @@ export default function Home() {
                   <p className="text-sm font-semibold text-green-700">Admin Mode - Free Access</p>
                 </div>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* How It Works Modal */}
+      <AnimatePresence>
+        {showHowItWorksModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            onClick={() => setShowHowItWorksModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative mx-4 w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl md:p-8"
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowHowItWorksModal(false)}
+                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                ✕
+              </button>
+
+              {/* Title */}
+              <h2 className="mb-6 text-3xl font-bold text-gray-900 md:text-4xl">How It Works</h2>
+
+              {/* Steps */}
+              <div className="flex flex-col gap-4 md:gap-6">
+                {/* Step 1 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="flex gap-4 rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 p-4 md:p-6"
+                >
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-xl font-bold text-white">
+                    1
+                  </div>
+                  <div>
+                    <h3 className="mb-2 text-lg font-bold text-gray-900">Upload Your Photo</h3>
+                    <p className="text-sm text-gray-600">Choose any photo of yourself, a friend, or even your pet! Our AI works with all kinds of images.</p>
+                  </div>
+                </motion.div>
+
+                {/* Step 2 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex gap-4 rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 p-4 md:p-6"
+                >
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-xl font-bold text-white">
+                    2
+                  </div>
+                  <div>
+                    <h3 className="mb-2 text-lg font-bold text-gray-900">AI Magic Happens</h3>
+                    <p className="text-sm text-gray-600">Our advanced AI transforms your photo into a professional vector sticker with vibrant colors and clean lines.</p>
+                  </div>
+                </motion.div>
+
+                {/* Step 3 */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex gap-4 rounded-xl bg-gradient-to-br from-indigo-50 to-blue-50 p-4 md:p-6"
+                >
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-xl font-bold text-white">
+                    3
+                  </div>
+                  <div>
+                    <h3 className="mb-2 text-lg font-bold text-gray-900">Download & Enjoy</h3>
+                    <p className="text-sm text-gray-600">Get your high-quality sticker instantly! Use it anywhere - social media, messaging apps, or print it out.</p>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* CTA Button */}
+              <motion.button
+                onClick={() => setShowHowItWorksModal(false)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="mt-6 w-full rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-6 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl md:mt-8"
+              >
+                Create Your Sticker Now →
+              </motion.button>
             </motion.div>
           </motion.div>
         )}
