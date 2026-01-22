@@ -42,7 +42,6 @@ const styleCategories = [
 const heroImages = [
   { image: '/examples/sticker1.png', style: 'Sticker Example 1' },
   { image: '/examples/sticker2.png', style: 'Sticker Example 2' },
-  { image: '/examples/after.jpg', style: 'Sticker Example 3' },
 ];
 
 // Testimonials
@@ -105,7 +104,7 @@ function HeroSticker() {
   }, []);
 
   return (
-    <div className="relative flex h-48 w-full items-center justify-center md:h-64">
+    <div className="relative flex h-56 w-full items-center justify-center md:h-72">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
@@ -119,18 +118,16 @@ function HeroSticker() {
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <div className="h-32 w-32 overflow-hidden rounded-xl border-4 border-white shadow-2xl md:h-40 md:w-40">
-              <img
-                src={heroImages[currentIndex].image}
-                alt={heroImages[currentIndex].style}
-                className="h-full w-full object-cover"
-                style={{ objectPosition: 'center 5%' }}
-              />
-            </div>
+            <img
+              src={heroImages[currentIndex].image}
+              alt={heroImages[currentIndex].style}
+              className="h-40 w-40 md:h-56 md:w-56 object-contain"
+              style={{ 
+                objectPosition: 'center 5%',
+                filter: 'drop-shadow(0 10px 25px rgba(0, 0, 0, 0.15))'
+              }}
+            />
           </motion.div>
-          <p className="mt-3 text-center text-xs font-semibold text-gray-600 md:mt-4 md:text-sm">
-            {heroImages[currentIndex].style}
-          </p>
         </motion.div>
       </AnimatePresence>
     </div>
@@ -453,17 +450,6 @@ export default function Home() {
                 INTO A STICKER!
               </span>
             </h1>
-
-            {/* Trust Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="mb-3 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 md:mb-4 md:px-4 md:py-2 md:text-sm"
-            >
-              <Star className="h-3 w-3 fill-amber-400 text-amber-400 md:h-4 md:w-4" />
-              Loved by 150K+ users
-            </motion.div>
           </div>
 
           {/* Main CTA with Pink Glow */}
@@ -486,15 +472,16 @@ export default function Home() {
             </div>
           </motion.button>
 
-          {/* Secondary Trust */}
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 md:gap-2 md:text-sm">
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400 md:h-3.5 md:w-3.5" />
-              ))}
-            </div>
-            <span>by 150K+ users</span>
-          </div>
+          {/* Trust Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-3 md:mt-4 inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-900 md:px-4 md:py-2 md:text-sm"
+          >
+            <Star className="h-3 w-3 fill-amber-400 text-amber-400 md:h-4 md:w-4" />
+            Loved by 150K+ users
+          </motion.div>
 
           {/* Image Preview and Generate Button */}
           {uploadedImage && (
@@ -529,7 +516,7 @@ export default function Home() {
         </section>
 
         {/* How It Works Link */}
-        <div className="mb-8 md:mb-12 flex justify-center">
+        <div className="mb-8 md:mb-12 mt-3 md:mt-4 flex justify-center">
           <motion.button
             onClick={() => setShowHowItWorksModal(true)}
             whileHover={{ scale: 1.05 }}
