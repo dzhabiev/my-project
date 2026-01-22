@@ -534,7 +534,7 @@ export default function Home() {
             onClick={() => setShowHowItWorksModal(true)}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="inline-block rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-lg font-bold text-white shadow-lg transition-all hover:shadow-xl"
+            className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl md:px-12 md:py-4 md:text-lg"
           >
             Learn How It Works →
           </motion.button>
@@ -920,14 +920,37 @@ export default function Home() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="flex gap-4 rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 p-4 md:p-6"
+                  className="flex flex-col gap-4 rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 p-4 md:p-6"
                 >
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-xl font-bold text-white">
-                    2
+                  <div className="flex gap-4">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-xl font-bold text-white">
+                      2
+                    </div>
+                    <div>
+                      <h3 className="mb-2 text-lg font-bold text-gray-900">AI Magic Happens</h3>
+                      <p className="text-sm text-gray-600">Our advanced AI transforms your photo into a professional vector sticker with vibrant colors and clean lines.</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="mb-2 text-lg font-bold text-gray-900">AI Magic Happens</h3>
-                    <p className="text-sm text-gray-600">Our advanced AI transforms your photo into a professional vector sticker with vibrant colors and clean lines.</p>
+                  
+                  {/* Before/After Images */}
+                  <div className="mt-3 flex items-center justify-center gap-3">
+                    <div className="overflow-hidden rounded-lg border-2 border-white shadow-lg">
+                      <img
+                        src="/examples/before.jpg"
+                        alt="Before"
+                        className="h-20 w-20 object-cover"
+                        style={{ objectPosition: 'center 5%' }}
+                      />
+                    </div>
+                    <div className="text-2xl font-bold text-[#3B82F6]">→</div>
+                    <div className="overflow-hidden rounded-lg border-2 border-white shadow-lg">
+                      <img
+                        src="/examples/after.jpg"
+                        alt="After"
+                        className="h-20 w-20 object-cover"
+                        style={{ objectPosition: 'center 5%' }}
+                      />
+                    </div>
                   </div>
                 </motion.div>
 
