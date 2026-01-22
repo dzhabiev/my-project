@@ -40,9 +40,9 @@ const styleCategories = [
 
 // Hero carousel images
 const heroImages = [
-  { color: '#FFB6E1', label: 'CUTE', style: 'Cute Cartoon' },
-  { color: '#FFE44D', label: 'FUNNY', style: 'Funny Meme' },
-  { color: '#C9A7FF', label: 'COOL', style: 'Unusual Everyday' },
+  { image: '/examples/sticker1.png', style: 'Sticker Example 1' },
+  { image: '/examples/sticker2.png', style: 'Sticker Example 2' },
+  { image: '/examples/after.jpg', style: 'Sticker Example 3' },
 ];
 
 // Testimonials
@@ -119,11 +119,14 @@ function HeroSticker() {
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <StickerPreview
-              color={heroImages[currentIndex].color}
-              label={heroImages[currentIndex].label}
-              size="lg"
-            />
+            <div className="h-32 w-32 overflow-hidden rounded-xl border-4 border-white shadow-2xl md:h-40 md:w-40">
+              <img
+                src={heroImages[currentIndex].image}
+                alt={heroImages[currentIndex].style}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: 'center 5%' }}
+              />
+            </div>
           </motion.div>
           <p className="mt-3 text-center text-xs font-semibold text-gray-600 md:mt-4 md:text-sm">
             {heroImages[currentIndex].style}
@@ -519,121 +522,12 @@ export default function Home() {
           )}
         </section>
 
-        {/* How It Works Section */}
-        <section className="mb-8 md:mb-12">
-          <h2 className="mb-3 text-center text-3xl font-bold tracking-tight text-gray-900 md:mb-5 md:text-4xl">
-            How it works
-          </h2>
-
-          <div className="flex flex-col gap-3 md:gap-5">
-            {/* Step 1 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
-            >
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
-                  1
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 md:text-2xl">Upload Your Photo</h3>
-              </div>
-              <p className="text-sm text-gray-600 md:text-base">
-                Choose any photo of yourself, a friend, or even your pet! Our AI works with all kinds of images.
-              </p>
-              <motion.div
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="mt-2 flex justify-center md:mt-4"
-              >
-                <div className="rounded-xl bg-white p-3 shadow-lg md:p-4">
-                  <Upload className="h-12 w-12 text-[#3B82F6] md:h-16 md:w-16" />
-                </div>
-              </motion.div>
-            </motion.div>
-
-            {/* Step 2 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
-            >
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
-                  2
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 md:text-2xl">AI Magic Happens</h3>
-              </div>
-              <p className="text-sm text-gray-600 md:text-base">
-                Our advanced AI transforms your photo into a professional vector sticker with vibrant colors and clean lines.
-              </p>
-              <div className="mt-2 flex items-center justify-center gap-3 md:mt-4 md:gap-6">
-                <motion.div
-                  className="overflow-hidden rounded-lg border-2 border-white shadow-lg md:rounded-xl md:border-4"
-                  animate={{ rotate: [0, -5, 5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <img
-                    src="/examples/before.jpg"
-                    alt="Before"
-                    className="h-14 w-14 object-cover md:h-20 md:w-20"
-                    style={{ objectPosition: 'center 5%' }}
-                  />
-                </motion.div>
-                <motion.div
-                  animate={{ x: [0, 10, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                  className="text-2xl md:text-4xl"
-                >
-                  →
-                </motion.div>
-                <motion.div
-                  className="overflow-hidden rounded-lg border-2 border-white shadow-lg md:rounded-xl md:border-4"
-                  animate={{ rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                >
-                  <img
-                    src="/examples/after.jpg"
-                    alt="After"
-                    className="h-14 w-14 object-cover md:h-20 md:w-20"
-                    style={{ objectPosition: 'center 5%' }}
-                  />
-                </motion.div>
-              </div>
-            </motion.div>
-
-            {/* Step 3 */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              className="flex flex-col gap-3 rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 p-5 md:gap-4 md:rounded-3xl md:p-8"
-            >
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] text-base font-bold text-white md:h-10 md:w-10 md:text-lg">
-                  3
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 md:text-2xl">Download & Enjoy</h3>
-              </div>
-              <p className="text-sm text-gray-600 md:text-base">
-                Get your high-quality sticker instantly! Use it anywhere - social media, messaging apps, or print it out.
-              </p>
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="mt-2 flex justify-center md:mt-4"
-              >
-                <div className="rounded-xl bg-white p-3 shadow-lg md:p-4">
-                  <Star className="h-12 w-12 fill-amber-400 text-amber-400 md:h-16 md:w-16" />
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
+        {/* How It Works Link */}
+        <div className="mb-8 md:mb-12 flex justify-center">
+          <a href="/how-it-works" className="inline-block rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-lg font-bold text-white shadow-lg transition-all hover:shadow-xl hover:scale-105">
+            Learn How It Works →
+          </a>
+        </div>
 
         {/* Testimonials Section */}
         <section className="mb-8 md:mb-12">
