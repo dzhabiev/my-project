@@ -7,13 +7,13 @@ export async function POST(request: NextRequest) {
     const rawBody = await request.text();
     const body = JSON.parse(rawBody);
     
-    console.log('Payment webhook received:', body);
+    console.log('CryptoCloud webhook received:', body);
 
     // Verify signature
-    const signature = request.headers.get('x-nowpayments-sig');
+    const signature = request.headers.get('x-cryptocloud-signature');
     
-    if (process.env.NOWPAYMENTS_IPN_SECRET && signature) {
-      const hmac = createHmac('sha512', process.env.NOWPAYMENTS_IPN_SECRET);
+    if (process.env.CRYPTOCLOUD_SECRET && signature) {
+      const hmac = createHmac('sha256', process.env.CRYPTOCLOUD_SECRET);
       hmac.update(rawBody);
       const expectedSignature = hmac.digest('hex');
       
@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
     }
     
     // Handle payment status
-    const { payment_status, order_id, payment_id } = body;
+    const { status, invoice_id, order_id } = body;
 
-    if (payment_status === 'finished' || payment_status === 'confirmed') {
+    if (status === 'success' || status === 'paid') {
       console.log('✅ Payment successful for order:', order_id);
       
       // order_id format: "sticker_{stickerId}"
@@ -56,9 +56,9 @@ export async function POST(request: NextRequest) {
         }
       }
       
-      console.log(`Payment ${payment_id} completed for order ${order_id}`);
-    } else if (payment_status === 'failed' || payment_status === 'expired') {
-      console.log('❌ Payment failed/expired for order:', order_id);
+      console.log(`Payment ${invoice_id} completed for order ${order_id}`);
+    } else if (status === 'failed' || status === 'expired' || status === 'canceled') {
+      console.log('❌ Payment failed/expired/canceled for order:', order_id);
     }
 
     return NextResponse.json({ success: true });

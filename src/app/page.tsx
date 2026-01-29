@@ -203,11 +203,35 @@ export default function Home() {
   const [selectedStickerIndex, setSelectedStickerIndex] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
+  const [showPaymentFailedModal, setShowPaymentFailedModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<any>(null);
   const supabase = createClient();
   const router = useRouter();
+
+  // Check for payment status from URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+    
+    if (paymentStatus === 'success') {
+      setShowPaymentSuccessModal(true);
+      // Clean URL
+      window.history.replaceState({}, '', '/');
+      // Reload stickers after a short delay to allow webhook to complete
+      setTimeout(() => {
+        if (user) {
+          loadUserStickers(user.id);
+        }
+      }, 2000);
+    } else if (paymentStatus === 'failed') {
+      setShowPaymentFailedModal(true);
+      window.history.replaceState({}, '', '/');
+    }
+  }, [user]);
 
   // Check for user session
   useEffect(() => {
@@ -215,6 +239,7 @@ export default function Home() {
       setUser(session?.user ?? null);
       if (session?.user) {
         loadUserStickers(session.user.id);
+        checkSuperAdmin(session.user.id);
       }
     });
 
@@ -224,13 +249,32 @@ export default function Home() {
       setUser(session?.user ?? null);
       if (session?.user) {
         loadUserStickers(session.user.id);
+        checkSuperAdmin(session.user.id);
       } else {
         setSavedStickers([]);
+        setIsSuperAdmin(false);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Check if user is super admin
+  const checkSuperAdmin = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('is_super_admin')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      console.error('Error checking super admin status:', error);
+    } else if (data?.is_super_admin) {
+      setIsSuperAdmin(true);
+      setIsAdmin(true);
+      console.log('🔥 Super Admin mode activated');
+    }
+  };
 
   // Load user stickers from Supabase
   const loadUserStickers = async (userId: string) => {
@@ -250,6 +294,23 @@ export default function Home() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.refresh();
+  };
+
+  const downloadSticker = async (imageUrl: string, index: number) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sticker-${index + 1}.png`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading sticker:', error);
+    }
   };
 
   // Check for admin code in URL
@@ -1059,6 +1120,114 @@ export default function Home() {
               >
                 Create Your Sticker Now →
               </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Payment Success Modal */}
+      <AnimatePresence>
+        {showPaymentSuccessModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={() => setShowPaymentSuccessModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-6 flex justify-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r from-green-400 to-emerald-500"
+                >
+                  <svg className="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </motion.div>
+              </div>
+              
+              <h3 className="mb-3 text-center text-2xl font-bold text-gray-900">Оплата успешна! 🎉</h3>
+              <p className="mb-6 text-center text-gray-600">
+                Ваш стикер разблокирован и готов к скачиванию. Проверьте галерею!
+              </p>
+
+              <div className="space-y-3">
+                {savedStickers.length > 0 && savedStickers[0].is_unlocked && (
+                  <button
+                    onClick={() => downloadSticker(savedStickers[0].image_url, 0)}
+                    className="w-full rounded-lg bg-gradient-to-r from-green-400 to-emerald-500 px-6 py-3 font-bold text-white shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-2"
+                  >
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Скачать стикер
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setShowPaymentSuccessModal(false);
+                    setShowStickersModal(true);
+                  }}
+                  className="w-full rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-6 py-3 font-bold text-white shadow-lg transition-all hover:shadow-xl"
+                >
+                  Открыть галерею
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Payment Failed Modal */}
+      <AnimatePresence>
+        {showPaymentFailedModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={() => setShowPaymentFailedModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-6 flex justify-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r from-red-400 to-rose-500"
+                >
+                  <svg className="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </motion.div>
+              </div>
+              
+              <h3 className="mb-3 text-center text-2xl font-bold text-gray-900">Оплата отменена</h3>
+              <p className="mb-6 text-center text-gray-600">
+                Оплата не была завершена. Попробуйте снова когда будете готовы.
+              </p>
+
+              <button
+                onClick={() => setShowPaymentFailedModal(false)}
+                className="w-full rounded-lg bg-gray-200 px-6 py-3 font-bold text-gray-800 shadow-lg transition-all hover:bg-gray-300"
+              >
+                Закрыть
+              </button>
             </motion.div>
           </motion.div>
         )}

@@ -11,40 +11,40 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!process.env.NOWPAYMENTS_API_KEY) {
+    if (!process.env.CRYPTOCLOUD_API_KEY || !process.env.CRYPTOCLOUD_SHOP_ID) {
       return NextResponse.json(
-        { error: 'NOWPayments API key not configured' },
+        { error: 'CryptoCloud API credentials not configured' },
         { status: 500 }
       );
     }
 
     const orderId = `sticker_${stickerId}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.customstickerpack.com';
     
-    // Create invoice with NOWPayments (supports both card and crypto)
-    const response = await fetch('https://api.nowpayments.io/v1/invoice', {
+    // Create invoice with CryptoCloud
+    const response = await fetch('https://api.cryptocloud.plus/v2/invoice/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.NOWPAYMENTS_API_KEY,
+        'Authorization': `Token ${process.env.CRYPTOCLOUD_API_KEY}`,
       },
       body: JSON.stringify({
-        price_amount: amount,
-        price_currency: 'usd',
+        shop_id: process.env.CRYPTOCLOUD_SHOP_ID,
+        amount: amount,
+        currency: 'USD',
         order_id: orderId,
-        order_description: 'AI Generated Sticker - Unlock Access',
-        ipn_callback_url: `${process.env.NEXT_PUBLIC_APP_URL}`,
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}?payment=success`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}?payment=cancelled`,
+        success_url: `${baseUrl}?payment=success`,
+        fail_url: `${baseUrl}?payment=failed`,
       }),
     });
 
     const data = await response.json();
 
-    console.log('NOWPayments response status:', response.status);
-    console.log('NOWPayments response data:', data);
+    console.log('CryptoCloud response status:', response.status);
+    console.log('CryptoCloud response data:', data);
 
-    if (!response.ok) {
-      console.error('NOWPayments error:', {
+    if (!response.ok || data.status !== 'success') {
+      console.error('CryptoCloud error:', {
         status: response.status,
         statusText: response.statusText,
         data: data
@@ -64,12 +64,11 @@ export async function POST(request: NextRequest) {
     // For now, we'll use the order_id to track
     
     return NextResponse.json({
-      paymentId: data.payment_id,
-      paymentUrl: data.invoice_url || `https://nowpayments.io/payment/?iid=${data.payment_id}`,
+      paymentId: data.result.uuid,
+      paymentUrl: data.result.link,
       orderId: orderId,
-      payAmount: data.pay_amount,
-      payCurrency: data.pay_currency,
-      payAddress: data.pay_address,
+      amount: amount,
+      currency: 'USD',
     });
   } catch (error) {
     console.error('Error creating payment:', error);
