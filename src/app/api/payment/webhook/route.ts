@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
+import { createClient } from '@/utils/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,12 +33,29 @@ export async function POST(request: NextRequest) {
     if (payment_status === 'finished' || payment_status === 'confirmed') {
       console.log('✅ Payment successful for order:', order_id);
       
-      // Here you would:
-      // 1. Mark sticker as paid in database
-      // 2. Send email with download link
-      // 3. Store in user's account if they're logged in
+      // order_id format: "sticker_{stickerId}"
+      if (order_id && order_id.startsWith('sticker_')) {
+        const stickerId = order_id.replace('sticker_', '');
+        
+        try {
+          const supabase = await createClient();
+          
+          // Unlock the sticker
+          const { error: updateError } = await supabase
+            .from('user_stickers')
+            .update({ is_unlocked: true })
+            .eq('id', stickerId);
+
+          if (updateError) {
+            console.error('Failed to unlock sticker:', updateError);
+          } else {
+            console.log(`✅ Sticker ${stickerId} unlocked successfully`);
+          }
+        } catch (dbError) {
+          console.error('Database error:', dbError);
+        }
+      }
       
-      // For now, we'll just log it
       console.log(`Payment ${payment_id} completed for order ${order_id}`);
     } else if (payment_status === 'failed' || payment_status === 'expired') {
       console.log('❌ Payment failed/expired for order:', order_id);

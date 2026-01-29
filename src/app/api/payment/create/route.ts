@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const { stickerUrl, amount = 3.00 } = await request.json();
+    const { stickerId, stickerUrl, amount = 3.00 } = await request.json();
 
-    if (!stickerUrl) {
+    if (!stickerUrl || !stickerId) {
       return NextResponse.json(
-        { error: 'Sticker URL required' },
+        { error: 'Sticker ID and URL required' },
         { status: 400 }
       );
     }
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const orderId = `sticker_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const orderId = `sticker_${stickerId}`;
     
     // Create invoice with NOWPayments (supports both card and crypto)
     const response = await fetch('https://api.nowpayments.io/v1/invoice', {
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         price_currency: 'usd',
         order_id: orderId,
         order_description: 'AI Generated Sticker - Unlock Access',
-        ipn_callback_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/payment/webhook`,
+        ipn_callback_url: `${process.env.NEXT_PUBLIC_APP_URL}`,
         success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}?payment=success`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}?payment=cancelled`,
       }),

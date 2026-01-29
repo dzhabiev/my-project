@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Star, Quote } from 'lucide-react';
+import { Upload, Star, Quote, User, LogOut } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 // Sticker categories with image placeholders
 const styleCategories = [
@@ -183,18 +186,71 @@ function CategoryCard({ category }: { category: typeof styleCategories[0] }) {
   );
 }
 
+interface UserSticker {
+  id: string;
+  image_url: string;
+  is_unlocked: boolean;
+  created_at: string;
+}
+
 export default function Home() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [generatedSticker, setGeneratedSticker] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showStickersModal, setShowStickersModal] = useState(false);
   const [showHowItWorksModal, setShowHowItWorksModal] = useState(false);
-  const [savedStickers, setSavedStickers] = useState<string[]>([]); // Stores URLs
+  const [savedStickers, setSavedStickers] = useState<UserSticker[]>([]);
   const [selectedStickerIndex, setSelectedStickerIndex] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
+  const [user, setUser] = useState<any>(null);
+  const supabase = createClient();
+  const router = useRouter();
+
+  // Check for user session
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        loadUserStickers(session.user.id);
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        loadUserStickers(session.user.id);
+      } else {
+        setSavedStickers([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load user stickers from Supabase
+  const loadUserStickers = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('user_stickers')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error loading stickers:', error);
+    } else if (data) {
+      setSavedStickers(data);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
+  };
 
   // Check for admin code in URL
   useEffect(() => {
@@ -203,27 +259,6 @@ export default function Home() {
     if (adminCode === process.env.NEXT_PUBLIC_ADMIN_CODE) {
       setIsAdmin(true);
       console.log('🔓 Admin mode activated');
-    }
-  }, []);
-
-  // Load saved sticker URLs from localStorage on mount
-  useEffect(() => {
-    try {
-      const stickers = localStorage.getItem('savedStickers');
-      if (stickers) {
-        const parsed = JSON.parse(stickers);
-        // Validate URLs to prevent XSS
-        if (Array.isArray(parsed)) {
-          const validUrls = parsed.filter((url: string) => 
-            typeof url === 'string' && 
-            (url.startsWith('https://v3b.fal.media/') || url.startsWith('http://localhost'))
-          );
-          setSavedStickers(validUrls);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading stickers:', error);
-      localStorage.removeItem('savedStickers');
     }
   }, []);
 
@@ -314,24 +349,28 @@ export default function Home() {
       
       setGeneratedSticker(data.imageUrl);
       
-      // Save sticker URL to localStorage with validation
-      try {
-        const stickers = localStorage.getItem('savedStickers');
-        const existingStickers = stickers ? JSON.parse(stickers) : [];
-        
-        // Validate existing stickers
-        const validStickers = Array.isArray(existingStickers) 
-          ? existingStickers.filter((url: string) => 
-              typeof url === 'string' && url.startsWith('https://v3b.fal.media/')
-            )
-          : [];
-        
-        const updatedStickers = [...validStickers, data.imageUrl];
-        localStorage.setItem('savedStickers', JSON.stringify(updatedStickers));
-        setSavedStickers(updatedStickers);
-        setSelectedStickerIndex(updatedStickers.length - 1);
-      } catch (storageError) {
-        console.error('Error saving to localStorage:', storageError);
+      // Save sticker to Supabase (locked by default)
+      if (user) {
+        try {
+          const { data: stickerData, error: insertError } = await supabase
+            .from('user_stickers')
+            .insert({
+              user_id: user.id,
+              image_url: data.imageUrl,
+              is_unlocked: false
+            })
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error('Error saving sticker to Supabase:', insertError);
+          } else if (stickerData) {
+            setSavedStickers((prev) => [stickerData, ...prev]);
+            setSelectedStickerIndex(0);
+          }
+        } catch (storageError) {
+          console.error('Error saving to Supabase:', storageError);
+        }
       }
       
       // Show stickers modal after generation
@@ -347,12 +386,12 @@ export default function Home() {
   };
 
   const handleUnlockSticker = async () => {
-    if (savedStickers.length === 0) return;
+    if (savedStickers.length === 0 || !user) return;
 
     setIsProcessingPayment(true);
 
     try {
-      const stickerUrl = savedStickers[selectedStickerIndex];
+      const currentSticker = savedStickers[selectedStickerIndex];
       
       const response = await fetch('/api/payment/create', {
         method: 'POST',
@@ -360,7 +399,8 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          stickerUrl: stickerUrl,
+          stickerId: currentSticker.id,
+          stickerUrl: currentSticker.image_url,
           amount: 3.00,
         }),
       });
@@ -421,19 +461,64 @@ export default function Home() {
         <div className="absolute right-0 top-2/3 h-px w-40 bg-gradient-to-l from-transparent via-cyan-300 to-transparent opacity-30"></div>
       </div>
 
-      {/* Fixed View My Stickers Button - Top Right */}
-      {savedStickers.length > 0 && (
-        <motion.button
-          onClick={() => setShowStickersModal(true)}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="fixed right-4 top-4 z-40 rounded-full border-2 border-[#3B82F6] bg-white px-4 py-2 text-sm font-bold text-[#3B82F6] shadow-lg transition-all hover:bg-[#3B82F6] hover:text-white md:px-6 md:py-3 md:text-base"
-        >
-          View My Stickers
-        </motion.button>
-      )}
+      {/* Auth Buttons - Top Right */}
+      <div className="fixed right-4 top-4 z-40 flex items-center gap-3">
+        {savedStickers.length > 0 && (
+          <motion.button
+            onClick={() => setShowStickersModal(true)}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="rounded-full border-2 border-[#3B82F6] bg-white px-4 py-2 text-sm font-bold text-[#3B82F6] shadow-lg transition-all hover:bg-[#3B82F6] hover:text-white"
+          >
+            <span className="hidden sm:inline">My Stickers</span>
+            <span className="sm:hidden">Stickers</span>
+          </motion.button>
+        )}
+        {user ? (
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2 rounded-full border-2 border-gray-200 bg-white px-4 py-2 shadow-lg">
+              <User className="h-4 w-4 text-gray-600" />
+              <span className="text-sm font-semibold text-gray-700">
+                {user.email?.split('@')[0]}
+              </span>
+            </div>
+            <motion.button
+              onClick={handleSignOut}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="rounded-full border-2 border-gray-200 bg-white p-2 shadow-lg transition-all hover:border-gray-300 sm:px-4 sm:py-2"
+            >
+              <div className="flex items-center gap-2">
+                <LogOut className="h-4 w-4 text-gray-600" />
+                <span className="hidden sm:inline text-sm font-semibold text-gray-700">Sign Out</span>
+              </div>
+            </motion.button>
+          </div>
+        ) : (
+          <>
+            <Link href="/login">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="rounded-full border-2 border-gray-200 bg-white px-3 py-2 text-sm font-bold text-gray-700 shadow-lg transition-all hover:border-gray-300 sm:px-5"
+              >
+                Login
+              </motion.button>
+            </Link>
+            <Link href="/signup">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-3 py-2 text-sm font-bold text-white shadow-lg transition-all hover:shadow-xl sm:px-5"
+              >
+                Sign Up
+              </motion.button>
+            </Link>
+          </>
+        )}
+      </div>
 
       <div ref={uploadSectionRef} className="relative z-10 mx-auto w-full max-w-[600px] px-4 py-6 md:px-6 md:py-10">
 
@@ -753,15 +838,15 @@ export default function Home() {
               {/* Storage Warning */}
               <div className="mb-3 px-1">
                 <p className="text-[9px] text-gray-400">
-                  Notice: Stickers are saved on this device only • Won't sync to other devices
+                  Notice: Stickers are securely saved in your account • Sync across all devices
                 </p>
               </div>
 
               {/* Sticker Gallery - Thumbnails */}
               <div className="mb-3 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                {savedStickers.map((stickerUrl, index) => (
+                {savedStickers.map((sticker, index) => (
                   <motion.button
-                    key={index}
+                    key={sticker.id}
                     onClick={() => setSelectedStickerIndex(index)}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -772,10 +857,17 @@ export default function Home() {
                     }`}
                   >
                     <img
-                      src={`/api/proxy-image?url=${encodeURIComponent(stickerUrl)}`}
+                      src={`/api/proxy-image?url=${encodeURIComponent(sticker.image_url)}`}
                       alt={`Sticker ${index + 1}`}
-                      className="h-full w-full object-cover"
+                      className={`h-full w-full object-cover ${!sticker.is_unlocked ? 'blur-sm' : ''}`}
                     />
+                    {!sticker.is_unlocked && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      </div>
+                    )}
                     {selectedStickerIndex === index && (
                       <div className="absolute inset-0 bg-[#3B82F6]/20"></div>
                     )}
@@ -787,13 +879,13 @@ export default function Home() {
               <div className="mb-4 rounded-xl bg-white p-4">
                 <div className="relative">
                   <img
-                    src={`/api/proxy-image?url=${encodeURIComponent(savedStickers[selectedStickerIndex])}`}
+                    src={`/api/proxy-image?url=${encodeURIComponent(savedStickers[selectedStickerIndex].image_url)}`}
                     alt="Generated Sticker"
-                    className={`w-full rounded-lg object-contain ${isAdmin ? '' : 'blur-sm'}`}
+                    className={`w-full rounded-lg object-contain ${!savedStickers[selectedStickerIndex].is_unlocked && !isAdmin ? 'blur-sm' : ''}`}
                   />
                   
-                  {/* Lock Overlay - Hidden for Admin */}
-                  {!isAdmin && (
+                  {/* Lock Overlay - Hidden for Admin or unlocked stickers */}
+                  {!savedStickers[selectedStickerIndex].is_unlocked && !isAdmin && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -826,8 +918,8 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Payment Button - Hidden for Admin */}
-              {!isAdmin && (
+              {/* Payment Button - Hidden for Admin or unlocked stickers */}
+              {!savedStickers[selectedStickerIndex].is_unlocked && !isAdmin && (
                 <div>
                   <motion.button
                     onClick={handleUnlockSticker}
