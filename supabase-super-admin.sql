@@ -18,6 +18,23 @@ BEGIN
     END LOOP;
 END $$;
 
+-- Drop existing function if it exists
+DROP FUNCTION IF EXISTS public.is_super_admin();
+
+-- Create a secure function to check super admin status
+-- SECURITY DEFINER means it runs with the privileges of the function owner, bypassing RLS
+CREATE OR REPLACE FUNCTION public.is_super_admin()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+AS $$
+  SELECT COALESCE(
+    (SELECT is_super_admin FROM public.profiles WHERE id = auth.uid() LIMIT 1),
+    false
+  );
+$$;
+
 -- Re-enable RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_stickers ENABLE ROW LEVEL SECURITY;
@@ -25,13 +42,13 @@ ALTER TABLE public.user_stickers ENABLE ROW LEVEL SECURITY;
 -- Create index for super admin checks
 CREATE INDEX IF NOT EXISTS idx_profiles_is_super_admin ON public.profiles(is_super_admin);
 
--- PROFILES policies
+-- PROFILES policies - now using the secure function
 CREATE POLICY "profiles_select_policy"
   ON public.profiles FOR SELECT
   TO authenticated
   USING (
     auth.uid() = id OR 
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
+    public.is_super_admin()
   );
 
 CREATE POLICY "profiles_update_policy"
@@ -40,13 +57,13 @@ CREATE POLICY "profiles_update_policy"
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
 
--- USER_STICKERS policies
+-- USER_STICKERS policies - now using the secure function
 CREATE POLICY "user_stickers_select_policy"
   ON public.user_stickers FOR SELECT
   TO authenticated
   USING (
     user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
+    public.is_super_admin()
   );
 
 CREATE POLICY "user_stickers_insert_policy"
@@ -59,9 +76,9 @@ CREATE POLICY "user_stickers_update_policy"
   TO authenticated
   USING (
     user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
+    public.is_super_admin()
   )
   WITH CHECK (
     user_id = auth.uid() OR
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_super_admin = true)
+    public.is_super_admin()
   );
