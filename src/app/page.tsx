@@ -335,9 +335,9 @@ export default function Home() {
     router.refresh();
   };
 
-  const downloadSticker = async (imageUrl: string, index: number) => {
+  const downloadSticker = async (stickerId: string, index: number) => {
     try {
-      const response = await fetch(imageUrl);
+      const response = await fetch(`/api/proxy-image?id=${stickerId}`);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -977,7 +977,7 @@ export default function Home() {
                     }`}
                   >
                     <img
-                      src={`/api/proxy-image?url=${encodeURIComponent(sticker.image_url)}`}
+                      src={`/api/proxy-image?id=${sticker.id}`}
                       alt={`Sticker ${index + 1}`}
                       className={`h-full w-full object-cover ${!sticker.is_unlocked ? 'blur-sm' : ''}`}
                     />
@@ -999,7 +999,7 @@ export default function Home() {
               <div className="mb-4 rounded-xl bg-white p-4">
                 <div className="relative">
                   <img
-                    src={`/api/proxy-image?url=${encodeURIComponent(savedStickers[selectedStickerIndex].image_url)}`}
+                    src={`/api/proxy-image?id=${savedStickers[selectedStickerIndex].id}`}
                     alt="Generated Sticker"
                     className={`w-full rounded-lg object-contain ${!savedStickers[selectedStickerIndex].is_unlocked && !isAdmin ? 'blur-sm' : ''}`}
                   />
@@ -1222,7 +1222,7 @@ export default function Home() {
               <div className="space-y-3">
                 {savedStickers.length > 0 && savedStickers[0].is_unlocked && (
                   <button
-                    onClick={() => downloadSticker(savedStickers[0].image_url, 0)}
+                    onClick={() => downloadSticker(savedStickers[0].id, 0)}
                     className="w-full rounded-lg bg-gradient-to-r from-green-400 to-emerald-500 px-6 py-3 font-bold text-white shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-2"
                   >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
