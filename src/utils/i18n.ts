@@ -110,6 +110,9 @@ export const translations = {
       processing: 'Processing...',
       noStickers: 'No stickers yet. Generate your first one!',
       unlockInfo: 'Unlock to download without watermark',
+      guestLimitTitle: 'Free Trial Used',
+      guestLimitMessage: 'You already have a sticker! Please sign up or log in to generate more stickers.',
+      guestLimitButton: 'Sign Up Now',
     },
     // Payment
     payment: {
@@ -220,6 +223,9 @@ export const translations = {
       processing: 'Обработка...',
       noStickers: 'Стикеров пока нет. Создайте свой первый!',
       unlockInfo: 'Разблокируйте, чтобы скачать без водяного знака',
+      guestLimitTitle: 'Пробная версия использована',
+      guestLimitMessage: 'У вас уже есть стикер! Зарегистрируйтесь или войдите, чтобы создавать больше стикеров.',
+      guestLimitButton: 'Зарегистрироваться',
     },
     // Оплата
     payment: {
@@ -321,6 +327,9 @@ export const translations = {
       processing: 'Verarbeitung...',
       noStickers: 'Noch keine Sticker. Erstellen Sie Ihren ersten!',
       unlockInfo: 'Entsperren Sie, um ohne Wasserzeichen herunterzuladen',
+      guestLimitTitle: 'Kostenlose Testversion verwendet',
+      guestLimitMessage: 'Sie haben bereits einen Sticker! Bitte registrieren oder einloggen Sie sich, um mehr Sticker zu erstellen.',
+      guestLimitButton: 'Jetzt registrieren',
     },
     payment: {
       success: 'Zahlung erfolgreich! Ihr Sticker ist jetzt entsperrt.',
@@ -420,6 +429,9 @@ export const translations = {
       processing: 'Traitement...',
       noStickers: 'Pas encore de stickers. Créez votre premier!',
       unlockInfo: 'Déverrouillez pour télécharger sans filigrane',
+      guestLimitTitle: 'Essai gratuit utilisé',
+      guestLimitMessage: 'Vous avez déjà un sticker! Veuillez vous inscrire ou vous connecter pour générer plus de stickers.',
+      guestLimitButton: "S'inscrire maintenant",
     },
     payment: {
       success: 'Paiement réussi! Votre sticker est maintenant déverrouillé.',
@@ -519,6 +531,9 @@ export const translations = {
       processing: 'Procesando...',
       noStickers: 'Aún no hay stickers. ¡Crea tu primero!',
       unlockInfo: 'Desbloquea para descargar sin marca de agua',
+      guestLimitTitle: 'Prueba gratuita usada',
+      guestLimitMessage: '¡Ya tienes un sticker! Por favor regístrate o inicia sesión para generar más stickers.',
+      guestLimitButton: 'Registrarse ahora',
     },
     payment: {
       success: '¡Pago exitoso! Tu sticker ahora está desbloqueado.',
@@ -618,6 +633,9 @@ export const translations = {
       processing: 'Elaborazione...',
       noStickers: 'Ancora nessuno sticker. Crea il tuo primo!',
       unlockInfo: 'Sblocca per scaricare senza filigrana',
+      guestLimitTitle: 'Prova gratuita utilizzata',
+      guestLimitMessage: 'Hai già uno sticker! Per favore registrati o accedi per generare più sticker.',
+      guestLimitButton: 'Registrati ora',
     },
     payment: {
       success: 'Pagamento riuscito! Il tuo sticker è ora sbloccato.',
@@ -717,6 +735,9 @@ export const translations = {
       processing: 'Processando...',
       noStickers: 'Ainda sem stickers. Crie seu primeiro!',
       unlockInfo: 'Desbloqueie para baixar sem marca d\'água',
+      guestLimitTitle: 'Teste gratuito usado',
+      guestLimitMessage: 'Você já tem um sticker! Por favor, cadastre-se ou faça login para gerar mais stickers.',
+      guestLimitButton: 'Cadastre-se agora',
     },
     payment: {
       success: 'Pagamento bem-sucedido! Seu sticker está agora desbloqueado.',
@@ -816,6 +837,9 @@ export const translations = {
       processing: 'Przetwarzanie...',
       noStickers: 'Jeszcze brak naklejek. Stwórz swoją pierwszą!',
       unlockInfo: 'Odblokuj, aby pobrać bez znaku wodnego',
+      guestLimitTitle: 'Bezpłatna wersja próbna wykorzystana',
+      guestLimitMessage: 'Masz już naklejkę! Zarejestruj się lub zaloguj, aby wygenerować więcej naklejek.',
+      guestLimitButton: 'Zarejestruj się teraz',
     },
     payment: {
       success: 'Płatność pomyślna! Twoja naklejka jest teraz odblokowana.',
@@ -915,6 +939,9 @@ export const translations = {
       processing: 'Обробка...',
       noStickers: 'Стікерів поки немає. Створіть свій перший!',
       unlockInfo: 'Розблокуйте, щоб завантажити без водяного знаку',
+      guestLimitTitle: 'Пробну версію використано',
+      guestLimitMessage: 'У вас вже є стікер! Будь ласка, зареєструйтеся або увійдіть, щоб генерувати більше стікерів.',
+      guestLimitButton: 'Зареєструватися',
     },
     payment: {
       success: 'Оплата успішна! Ваш стікер розблоковано.',
@@ -1014,6 +1041,9 @@ export const translations = {
       processing: 'İşleniyor...',
       noStickers: 'Henüz çıkartma yok. İlkini oluşturun!',
       unlockInfo: 'Filigran olmadan indirmek için kilidi açın',
+      guestLimitTitle: 'Ücretsiz deneme kullanıldı',
+      guestLimitMessage: 'Zaten bir çıkartmanız var! Daha fazla çıkartma oluşturmak için lütfen kayıt olun veya giriş yapın.',
+      guestLimitButton: 'Şimdi kayıt ol',
     },
     payment: {
       success: 'Ödeme başarılı! Çıkartmanızın kilidi açıldı.',

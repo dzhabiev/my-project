@@ -209,6 +209,7 @@ export default function Home() {
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
   const [showPaymentFailedModal, setShowPaymentFailedModal] = useState(false);
+  const [showGuestLimitModal, setShowGuestLimitModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<any>(null);
@@ -261,6 +262,8 @@ export default function Home() {
         // If there's an error getting session (e.g., invalid refresh token), sign out
         supabase.auth.signOut();
         setUser(null);
+        // Load guest sticker if exists
+        loadGuestSticker();
         return;
       }
       
@@ -268,6 +271,9 @@ export default function Home() {
       if (session?.user) {
         loadUserStickers(session.user.id);
         checkSuperAdmin(session.user.id);
+      } else {
+        // Not logged in - check for guest sticker
+        loadGuestSticker();
       }
     });
 
@@ -327,6 +333,23 @@ export default function Home() {
 
     if (!error && data) {
       setSavedStickers(data);
+    }
+  };
+
+  // Load guest sticker from localStorage
+  const loadGuestSticker = async () => {
+    const guestStickerId = localStorage.getItem('guestStickerId');
+    if (guestStickerId) {
+      const { data, error } = await supabase
+        .from('user_stickers')
+        .select('*')
+        .eq('id', guestStickerId)
+        .maybeSingle();
+
+      if (!error && data) {
+        setSavedStickers([data]);
+        setSelectedStickerIndex(0);
+      }
     }
   };
 
@@ -417,6 +440,15 @@ export default function Home() {
   const handleGenerate = async () => {
     if (!uploadedImage) return;
 
+    // Check if guest user already has a sticker
+    if (!user) {
+      const guestStickerId = localStorage.getItem('guestStickerId');
+      if (guestStickerId) {
+        setShowGuestLimitModal(true);
+        return;
+      }
+    }
+
     setIsGenerating(true);
     setGeneratedSticker(null); // Clear previous result
 
@@ -443,25 +475,48 @@ export default function Home() {
       
       setGeneratedSticker(data.imageUrl);
       
-      // Save sticker to Supabase (locked by default)
+      // Save sticker to Supabase (locked by default) - allow for both logged in and guest users
       if (user) {
-        try {
-          const { data: stickerData, error: insertError } = await supabase
-            .from('user_stickers')
-            .insert({
-              user_id: user.id,
-              image_url: data.imageUrl,
-              is_unlocked: false
-            })
-            .select()
-            .single();
+        // Logged in user
+        const { data: stickerData, error: insertError } = await supabase
+          .from('user_stickers')
+          .insert({
+            user_id: user.id,
+            image_url: data.imageUrl,
+            is_unlocked: false
+          })
+          .select()
+          .single();
 
-          if (!insertError && stickerData) {
-            setSavedStickers((prev) => [stickerData, ...prev]);
-            setSelectedStickerIndex(0);
-          }
-        } catch (storageError) {
-          // Silent error handling
+        if (insertError) {
+          throw new Error(`Failed to save sticker: ${insertError.message}`);
+        }
+
+        if (stickerData) {
+          setSavedStickers((prev) => [stickerData, ...prev]);
+          setSelectedStickerIndex(0);
+        }
+      } else {
+        // Guest user - save without user_id
+        const { data: stickerData, error: insertError } = await supabase
+          .from('user_stickers')
+          .insert({
+            user_id: null,
+            image_url: data.imageUrl,
+            is_unlocked: false
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          throw new Error(`Failed to save sticker: ${insertError.message}`);
+        }
+
+        if (stickerData) {
+          setSavedStickers([stickerData]);
+          setSelectedStickerIndex(0);
+          // Store sticker ID in localStorage for guest
+          localStorage.setItem('guestStickerId', stickerData.id);
         }
       }
       
@@ -476,7 +531,14 @@ export default function Home() {
   };
 
   const handleUnlockSticker = async () => {
-    if (savedStickers.length === 0 || !user) return;
+    if (savedStickers.length === 0) return;
+
+    // If not logged in, redirect to login
+    if (!user) {
+      alert('Please sign up or log in to unlock your sticker');
+      router.push('/signup');
+      return;
+    }
 
     setIsProcessingPayment(true);
 
@@ -1005,7 +1067,7 @@ export default function Home() {
                   />
                   
                   {/* Lock Overlay - Hidden for Admin or unlocked stickers */}
-                  {!savedStickers[selectedStickerIndex].is_unlocked && !isAdmin && (
+                  {!savedStickers[selectedStickerIndex].is_unlocked && !isAdmin && !isSuperAdmin && (
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -1039,7 +1101,7 @@ export default function Home() {
               </div>
 
               {/* Payment Button - Hidden for Admin or unlocked stickers */}
-              {!savedStickers[selectedStickerIndex].is_unlocked && !isAdmin && (
+              {!savedStickers[selectedStickerIndex].is_unlocked && !isAdmin && !isSuperAdmin && (
                 <div>
                   <motion.button
                     onClick={handleUnlockSticker}
@@ -1287,6 +1349,54 @@ export default function Home() {
               >
                 Закрыть
               </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Guest Limit Modal */}
+      <AnimatePresence>
+        {showGuestLimitModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowGuestLimitModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl"
+            >
+              <div className="mb-6 flex justify-center">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4]"
+                >
+                  <svg className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </motion.div>
+              </div>
+              
+              <h3 className="mb-3 text-center text-2xl font-bold text-gray-900">{t.stickers.guestLimitTitle}</h3>
+              <p className="mb-6 text-center text-gray-600">
+                {t.stickers.guestLimitMessage}
+              </p>
+
+              <motion.button
+                onClick={() => router.push('/signup')}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-6 py-3 font-bold text-white shadow-lg transition-all hover:shadow-xl"
+              >
+                {t.stickers.guestLimitButton}
+              </motion.button>
             </motion.div>
           </motion.div>
         )}

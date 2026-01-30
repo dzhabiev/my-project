@@ -16,15 +16,8 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient();
     
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Get current user (optional)
+    const { data: { user } } = await supabase.auth.getUser();
 
     // Get sticker from database
     const { data: sticker, error } = await supabase
@@ -40,24 +33,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check if user is owner
-    const isOwner = sticker.user_id === user.id;
-    
-    if (!isOwner) {
-      return NextResponse.json(
-        { error: 'Access denied' },
-        { status: 403 }
-      );
-    }
-
     // Check if user is super admin
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_super_admin')
-      .eq('id', user.id)
-      .maybeSingle();
-    
-    const isSuperAdmin = profile?.is_super_admin === true;
+    let isSuperAdmin = false;
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_super_admin')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      isSuperAdmin = profile?.is_super_admin === true;
+    }
 
     // Validate image URL
     if (!sticker.image_url || !sticker.image_url.startsWith('https://v3b.fal.media/')) {

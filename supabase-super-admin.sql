@@ -4,6 +4,9 @@
 ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_stickers DISABLE ROW LEVEL SECURITY;
 
+-- Allow user_id to be NULL for guest stickers
+ALTER TABLE public.user_stickers ALTER COLUMN user_id DROP NOT NULL;
+
 -- Drop ALL existing policies
 DO $$ 
 DECLARE
@@ -58,14 +61,19 @@ CREATE POLICY "profiles_update_policy"
   WITH CHECK (auth.uid() = id);
 
 -- USER_STICKERS policies - now using the secure function
+-- Allow unauthenticated users to SELECT stickers (for guest preview)
 CREATE POLICY "user_stickers_select_policy"
   ON public.user_stickers FOR SELECT
-  TO authenticated
-  USING (
-    user_id = auth.uid() OR
-    public.is_super_admin()
-  );
+  TO anon, authenticated
+  USING (true);
 
+-- Allow guests to INSERT their first sticker with user_id = null
+CREATE POLICY "user_stickers_insert_guest_policy"
+  ON public.user_stickers FOR INSERT
+  TO anon
+  WITH CHECK (user_id IS NULL);
+
+-- Allow authenticated users to INSERT with their own user_id
 CREATE POLICY "user_stickers_insert_policy"
   ON public.user_stickers FOR INSERT
   TO authenticated
