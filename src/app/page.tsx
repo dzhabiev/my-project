@@ -210,6 +210,7 @@ export default function Home() {
   const [showPaymentSuccessModal, setShowPaymentSuccessModal] = useState(false);
   const [showPaymentFailedModal, setShowPaymentFailedModal] = useState(false);
   const [showGuestLimitModal, setShowGuestLimitModal] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadSectionRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<any>(null);
@@ -359,19 +360,31 @@ export default function Home() {
   };
 
   const downloadSticker = async (stickerId: string, index: number) => {
+    setIsDownloading(true);
     try {
       const response = await fetch(`/api/proxy-image?id=${stickerId}`);
+      if (!response.ok) {
+        throw new Error('Failed to download sticker');
+      }
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `sticker-${index + 1}.png`;
+      a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      
+      // Wait a bit before cleanup to ensure download starts
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
     } catch (error) {
-      // Silent error handling
+      console.error('Download error:', error);
+      alert('Failed to download sticker. Please try again.');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -544,6 +557,25 @@ export default function Home() {
 
     try {
       const currentSticker = savedStickers[selectedStickerIndex];
+      
+      // Demo mode for osmanovalev33@gmail.com - auto unlock without payment
+      if (user.email === 'osmanovalev33@gmail.com') {
+        const { error: updateError } = await supabase
+          .from('user_stickers')
+          .update({ is_unlocked: true })
+          .eq('id', currentSticker.id);
+
+        if (!updateError) {
+          setSavedStickers((prev) =>
+            prev.map((s, idx) =>
+              idx === selectedStickerIndex ? { ...s, is_unlocked: true } : s
+            )
+          );
+          setShowPaymentSuccessModal(true);
+        }
+        setIsProcessingPayment(false);
+        return;
+      }
       
       const response = await fetch('/api/payment/create', {
         method: 'POST',
@@ -1118,6 +1150,34 @@ export default function Home() {
                 </div>
               )}
 
+              {/* Download Button - Shown for unlocked stickers */}
+              {savedStickers[selectedStickerIndex].is_unlocked && (
+                <motion.button
+                  onClick={() => downloadSticker(savedStickers[selectedStickerIndex].id, selectedStickerIndex)}
+                  disabled={isDownloading}
+                  whileHover={{ scale: isDownloading ? 1 : 1.02 }}
+                  whileTap={{ scale: isDownloading ? 1 : 0.98 }}
+                  className="w-full rounded-lg bg-gradient-to-r from-green-400 to-emerald-500 px-5 py-3 text-base font-semibold text-white shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isDownloading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download Sticker
+                    </>
+                  )}
+                </motion.button>
+              )}
+
               {/* Admin Badge */}
               {isAdmin && (
                 <div className="flex items-center justify-center gap-2 rounded-lg bg-green-100 px-4 py-2">
@@ -1276,22 +1336,37 @@ export default function Home() {
                 </motion.div>
               </div>
               
-              <h3 className="mb-3 text-center text-2xl font-bold text-gray-900">Оплата успешна! 🎉</h3>
+              <h3 className="mb-3 text-center text-2xl font-bold text-gray-900">{t.payment.successTitle}</h3>
               <p className="mb-6 text-center text-gray-600">
-                Ваш стикер разблокирован и готов к скачиванию. Проверьте галерею!
+                {t.payment.successMessage}
               </p>
 
               <div className="space-y-3">
-                {savedStickers.length > 0 && savedStickers[0].is_unlocked && (
-                  <button
-                    onClick={() => downloadSticker(savedStickers[0].id, 0)}
-                    className="w-full rounded-lg bg-gradient-to-r from-green-400 to-emerald-500 px-6 py-3 font-bold text-white shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-2"
+                {savedStickers.length > 0 && savedStickers[selectedStickerIndex]?.is_unlocked && (
+                  <motion.button
+                    onClick={() => downloadSticker(savedStickers[selectedStickerIndex].id, selectedStickerIndex)}
+                    disabled={isDownloading}
+                    whileHover={{ scale: isDownloading ? 1 : 1.02 }}
+                    whileTap={{ scale: isDownloading ? 1 : 0.98 }}
+                    className="w-full rounded-lg bg-gradient-to-r from-green-400 to-emerald-500 px-6 py-3 font-bold text-white shadow-lg transition-all hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Скачать стикер
-                  </button>
+                    {isDownloading ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {t.stickers.processing}
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        {t.payment.downloadSticker}
+                      </>
+                    )}
+                  </motion.button>
                 )}
                 <button
                   onClick={() => {
@@ -1300,7 +1375,7 @@ export default function Home() {
                   }}
                   className="w-full rounded-lg bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-6 py-3 font-bold text-white shadow-lg transition-all hover:shadow-xl"
                 >
-                  Открыть галерею
+                  {t.payment.openGallery}
                 </button>
               </div>
             </motion.div>

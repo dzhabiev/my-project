@@ -118,6 +118,10 @@ export const translations = {
     payment: {
       success: 'Payment successful! Your sticker is now unlocked.',
       failed: 'Payment failed. Please try again.',
+      successTitle: 'Payment Successful! 🎉',
+      successMessage: 'Your sticker is unlocked and ready to download. Check your gallery!',
+      downloadSticker: 'Download Sticker',
+      openGallery: 'Open Gallery',
     },
     // Errors
     errors: {
@@ -231,6 +235,10 @@ export const translations = {
     payment: {
       success: 'Оплата прошла успешно! Ваш стикер разблокирован.',
       failed: 'Ошибка оплаты. Попробуйте снова.',
+      successTitle: 'Оплата успешна! 🎉',
+      successMessage: 'Ваш стикер разблокирован и готов к скачиванию. Проверьте галерею!',
+      downloadSticker: 'Скачать стикер',
+      openGallery: 'Открыть галерею',
     },
     // Ошибки
     errors: {
@@ -334,6 +342,10 @@ export const translations = {
     payment: {
       success: 'Zahlung erfolgreich! Ihr Sticker ist jetzt entsperrt.',
       failed: 'Zahlung fehlgeschlagen. Bitte versuchen Sie es erneut.',
+      successTitle: 'Zahlung erfolgreich! 🎉',
+      successMessage: 'Ihr Sticker ist entsperrt und zum Download bereit. Überprüfen Sie Ihre Galerie!',
+      downloadSticker: 'Sticker herunterladen',
+      openGallery: 'Galerie öffnen',
     },
     errors: {
       generateFailed: 'Sticker konnte nicht erstellt werden',
@@ -436,6 +448,10 @@ export const translations = {
     payment: {
       success: 'Paiement réussi! Votre sticker est maintenant déverrouillé.',
       failed: 'Échec du paiement. Veuillez réessayer.',
+      successTitle: 'Paiement réussi! 🎉',
+      successMessage: 'Votre sticker est déverrouillé et prêt à télécharger. Vérifiez votre galerie!',
+      downloadSticker: 'Télécharger le sticker',
+      openGallery: 'Ouvrir la galerie',
     },
     errors: {
       generateFailed: 'Échec de la génération du sticker',
@@ -640,6 +656,10 @@ export const translations = {
     payment: {
       success: 'Pagamento riuscito! Il tuo sticker è ora sbloccato.',
       failed: 'Pagamento fallito. Riprova.',
+      successTitle: 'Pagamento riuscito! 🎉',
+      successMessage: 'Il tuo sticker è sbloccato e pronto per il download. Controlla la tua galleria!',
+      downloadSticker: 'Scarica sticker',
+      openGallery: 'Apri galleria',
     },
     errors: {
       generateFailed: 'Impossibile generare lo sticker',
@@ -844,6 +864,10 @@ export const translations = {
     payment: {
       success: 'Płatność pomyślna! Twoja naklejka jest teraz odblokowana.',
       failed: 'Płatność nie powiodła się. Spróbuj ponownie.',
+      successTitle: 'Płatność pomyślna! 🎉',
+      successMessage: 'Twoja naklejka jest odblokowana i gotowa do pobrania. Sprawdź swoją galerię!',
+      downloadSticker: 'Pobierz naklejkę',
+      openGallery: 'Otwórz galerię',
     },
     errors: {
       generateFailed: 'Nie udało się wygenerować naklejki',
@@ -946,6 +970,10 @@ export const translations = {
     payment: {
       success: 'Оплата успішна! Ваш стікер розблоковано.',
       failed: 'Помилка оплати. Спробуйте ще раз.',
+      successTitle: 'Оплата успішна! 🎉',
+      successMessage: 'Ваш стікер розблоковано і готовий до завантаження. Перевірте галерею!',
+      downloadSticker: 'Завантажити стікер',
+      openGallery: 'Відкрити галерею',
     },
     errors: {
       generateFailed: 'Не вдалося створити стікер',
@@ -1048,6 +1076,10 @@ export const translations = {
     payment: {
       success: 'Ödeme başarılı! Çıkartmanızın kilidi açıldı.',
       failed: 'Ödeme başarısız. Lütfen tekrar deneyin.',
+      successTitle: 'Ödeme başarılı! 🎉',
+      successMessage: 'Çıkartmanızın kilidi açıldı ve indirmeye hazır. Galerinizi kontrol edin!',
+      downloadSticker: 'Çıkartmayı indir',
+      openGallery: 'Galeriyi aç',
     },
     errors: {
       generateFailed: 'Çıkartma oluşturulamadı',
