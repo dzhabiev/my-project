@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
         .png()
         .toBuffer();
 
-      return new NextResponse(blurredImage, {
+      return new NextResponse(new Uint8Array(blurredImage), {
         headers: {
           'Content-Type': 'image/png',
           'Cache-Control': 'private, no-cache, no-store, must-revalidate',
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Return full quality for unlocked or super admin
-    return new NextResponse(imageBuffer, {
+    return new NextResponse(new Uint8Array(Buffer.from(imageBuffer)), {
       headers: {
         'Content-Type': imageResponse.headers.get('Content-Type') || 'image/png',
         'Cache-Control': 'private, no-cache, no-store, must-revalidate',
