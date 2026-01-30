@@ -554,6 +554,10 @@ export const translations = {
     payment: {
       success: '¡Pago exitoso! Tu sticker ahora está desbloqueado.',
       failed: 'Pago fallido. Por favor, inténtalo de nuevo.',
+      successTitle: '¡Pago exitoso! 🎉',
+      successMessage: '¡Tu sticker está desbloqueado y listo para descargar! ¡Revisa tu galería!',
+      downloadSticker: 'Descargar sticker',
+      openGallery: 'Abrir galería',
     },
     errors: {
       generateFailed: 'Error al generar sticker',
@@ -762,6 +766,10 @@ export const translations = {
     payment: {
       success: 'Pagamento bem-sucedido! Seu sticker está agora desbloqueado.',
       failed: 'Pagamento falhou. Por favor, tente novamente.',
+      successTitle: 'Pagamento bem-sucedido! 🎉',
+      successMessage: 'Seu sticker está desbloqueado e pronto para download. Confira sua galeria!',
+      downloadSticker: 'Baixar sticker',
+      openGallery: 'Abrir galeria',
     },
     errors: {
       generateFailed: 'Falha ao gerar sticker',
