@@ -6,8 +6,6 @@ export async function POST(request: NextRequest) {
   try {
     const rawBody = await request.text();
     const body = JSON.parse(rawBody);
-    
-    console.log('CryptoCloud webhook received:', body);
 
     // Verify signature
     const signature = request.headers.get('x-cryptocloud-signature');
@@ -18,21 +16,17 @@ export async function POST(request: NextRequest) {
       const expectedSignature = hmac.digest('hex');
       
       if (signature !== expectedSignature) {
-        console.error('⚠️ Invalid webhook signature');
         return NextResponse.json(
           { error: 'Invalid signature' },
           { status: 403 }
         );
       }
-      console.log('✅ Webhook signature verified');
     }
     
     // Handle payment status
     const { status, invoice_id, order_id } = body;
 
     if (status === 'success' || status === 'paid') {
-      console.log('✅ Payment successful for order:', order_id);
-      
       // order_id format: "sticker_{stickerId}"
       if (order_id && order_id.startsWith('sticker_')) {
         const stickerId = order_id.replace('sticker_', '');
@@ -47,23 +41,22 @@ export async function POST(request: NextRequest) {
             .eq('id', stickerId);
 
           if (updateError) {
-            console.error('Failed to unlock sticker:', updateError);
-          } else {
-            console.log(`✅ Sticker ${stickerId} unlocked successfully`);
+            return NextResponse.json(
+              { error: 'Failed to unlock sticker' },
+              { status: 500 }
+            );
           }
         } catch (dbError) {
-          console.error('Database error:', dbError);
+          return NextResponse.json(
+            { error: 'Database error' },
+            { status: 500 }
+          );
         }
       }
-      
-      console.log(`Payment ${invoice_id} completed for order ${order_id}`);
-    } else if (status === 'failed' || status === 'expired' || status === 'canceled') {
-      console.log('❌ Payment failed/expired/canceled for order:', order_id);
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Webhook error:', error);
     return NextResponse.json(
       { error: 'Webhook processing failed' },
       { status: 500 }

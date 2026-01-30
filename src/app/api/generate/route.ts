@@ -36,13 +36,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Basic rate limiting: check IP address
-    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-    console.log('Request from IP:', ip);
-
-    console.log('Checking FAL_KEY:', process.env.FAL_KEY ? 'Key exists' : 'Key missing');
-    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('FAL')));
-
     if (!process.env.FAL_KEY) {
       return NextResponse.json(
         { error: 'FAL_KEY not configured' },
@@ -50,10 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Starting sticker generation...');
-
     // Use Nano Banana Pro Edit model with refined prompt for people and objects
-    console.log('Using Nano Banana Pro Edit model with detailed hardcoded prompt...');
     const result: any = await fal.subscribe('fal-ai/nano-banana-pro/edit', {
       input: {
         image_urls: [image],
@@ -61,14 +51,8 @@ export async function POST(request: NextRequest) {
         image_strength: 0.5,
         guidance_scale: 10,
       },
-      logs: true,
-      onQueueUpdate: (update: any) => {
-        console.log('Queue update:', update.status);
-      },
+      logs: false,
     });
-    console.log('Nano Banana Pro Edit generation succeeded');
-
-    console.log('Generation complete:', result);
 
     // Return the generated image URL from Nano Banana Pro
     const generatedImageUrl = result.image?.url || result.images?.[0]?.url;
@@ -78,17 +62,13 @@ export async function POST(request: NextRequest) {
         imageUrl: generatedImageUrl,
       });
     } else {
-      console.error('No image found in result:', result);
       throw new Error('No image in response');
     }
   } catch (error) {
-    console.error('Error generating sticker:', error);
-    console.error('Full error object:', JSON.stringify(error, null, 2));
     return NextResponse.json(
       {
         error: 'Failed to generate sticker',
         details: error instanceof Error ? error.message : 'Unknown error',
-        fullError: error
       },
       { status: 500 }
     );

@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, Star, Quote, User, LogOut } from 'lucide-react';
+import { Upload, Star, Quote, User, LogOut, Globe } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { getTranslation, Language, languages } from '@/utils/i18n';
 
 // Sticker categories with image placeholders
 const styleCategories = [
@@ -194,6 +195,8 @@ interface UserSticker {
 }
 
 export default function Home() {
+  const [language, setLanguage] = useState<Language>('en');
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [generatedSticker, setGeneratedSticker] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -211,6 +214,24 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const supabase = createClient();
   const router = useRouter();
+  
+  const t = getTranslation(language);
+  
+  // Load language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('language') as Language;
+    const validLangs = languages.map(l => l.code);
+    if (savedLang && validLangs.includes(savedLang)) {
+      setLanguage(savedLang);
+    }
+  }, []);
+  
+  // Change language
+  const changeLanguage = (lang: Language) => {
+    setLanguage(lang);
+    localStorage.setItem('language', lang);
+    setShowLanguageMenu(false);
+  };
 
   // Check for payment status from URL
   useEffect(() => {
@@ -235,7 +256,14 @@ export default function Home() {
 
   // Check for user session
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        // If there's an error getting session (e.g., invalid refresh token), sign out
+        supabase.auth.signOut();
+        setUser(null);
+        return;
+      }
+      
       setUser(session?.user ?? null);
       if (session?.user) {
         loadUserStickers(session.user.id);
@@ -245,7 +273,23 @@ export default function Home() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // Handle token refresh errors
+      if (event === 'TOKEN_REFRESHED' && !session) {
+        supabase.auth.signOut();
+        setUser(null);
+        setSavedStickers([]);
+        setIsSuperAdmin(false);
+        return;
+      }
+      
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setSavedStickers([]);
+        setIsSuperAdmin(false);
+        return;
+      }
+      
       setUser(session?.user ?? null);
       if (session?.user) {
         loadUserStickers(session.user.id);
@@ -265,14 +309,11 @@ export default function Home() {
       .from('profiles')
       .select('is_super_admin')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
-    if (error) {
-      console.error('Error checking super admin status:', error);
-    } else if (data?.is_super_admin) {
+    if (!error && data?.is_super_admin) {
       setIsSuperAdmin(true);
       setIsAdmin(true);
-      console.log('🔥 Super Admin mode activated');
     }
   };
 
@@ -284,9 +325,7 @@ export default function Home() {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error loading stickers:', error);
-    } else if (data) {
+    if (!error && data) {
       setSavedStickers(data);
     }
   };
@@ -309,7 +348,7 @@ export default function Home() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Error downloading sticker:', error);
+      // Silent error handling
     }
   };
 
@@ -319,7 +358,6 @@ export default function Home() {
     const adminCode = urlParams.get('admin');
     if (adminCode === process.env.NEXT_PUBLIC_ADMIN_CODE) {
       setIsAdmin(true);
-      console.log('🔓 Admin mode activated');
     }
   }, []);
 
@@ -383,7 +421,6 @@ export default function Home() {
     setGeneratedSticker(null); // Clear previous result
 
     try {
-      console.log('Sending request to generate sticker...');
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
@@ -393,15 +430,11 @@ export default function Home() {
       });
 
       const data = await response.json();
-      console.log("Response from FAL:", data);
 
       if (!response.ok) {
-        console.error('Full error response:', data);
         const errorMsg = data.fullError?.message || data.details || data.error || 'Failed to generate sticker';
         throw new Error(errorMsg);
       }
-
-      console.log('Received sticker URL:', data.imageUrl);
       
       // Validate URL before saving
       if (!data.imageUrl || typeof data.imageUrl !== 'string' || !data.imageUrl.startsWith('https://v3b.fal.media/')) {
@@ -423,24 +456,20 @@ export default function Home() {
             .select()
             .single();
 
-          if (insertError) {
-            console.error('Error saving sticker to Supabase:', insertError);
-          } else if (stickerData) {
+          if (!insertError && stickerData) {
             setSavedStickers((prev) => [stickerData, ...prev]);
             setSelectedStickerIndex(0);
           }
         } catch (storageError) {
-          console.error('Error saving to Supabase:', storageError);
+          // Silent error handling
         }
       }
       
       // Show stickers modal after generation
       setTimeout(() => setShowStickersModal(true), 500);
     } catch (error) {
-      console.error('Error generating sticker:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Displaying error to user:', errorMessage);
-      alert(`Failed to generate sticker: ${errorMessage}. Check console for details.`);
+      alert(`Failed to generate sticker: ${errorMessage}`);
     } finally {
       setIsGenerating(false);
     }
@@ -469,11 +498,8 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        console.error('Payment creation failed:', data);
         throw new Error(data.error || data.message || 'Failed to create payment');
       }
-
-      console.log('Payment created:', data);
 
       // Open payment page in new window
       if (data.paymentUrl) {
@@ -484,7 +510,6 @@ export default function Home() {
         alert(`Payment created!\nAmount: ${data.payAmount} ${data.payCurrency}\nAddress: ${data.payAddress}\n\nSend payment to unlock your sticker.`);
       }
     } catch (error) {
-      console.error('Error creating payment:', error);
       alert(`Failed to create payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsProcessingPayment(false);
@@ -524,6 +549,40 @@ export default function Home() {
 
       {/* Auth Buttons - Top Right */}
       <div className="fixed right-4 top-4 z-40 flex items-center gap-3">
+        {/* Language Dropdown */}
+        <div className="relative">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowLanguageMenu(!showLanguageMenu)}
+            className="flex items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-gray-700 shadow-lg backdrop-blur-sm transition-all hover:bg-white"
+          >
+            <Globe className="h-4 w-4" />
+            <span>{languages.find(l => l.code === language)?.name}</span>
+          </motion.button>
+          
+          {showLanguageMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute right-0 mt-2 w-48 rounded-xl bg-white shadow-xl border border-gray-100 overflow-hidden"
+            >
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => changeLanguage(lang.code as Language)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-gray-50 ${
+                    language === lang.code ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700'
+                  }`}
+                >
+                  <span>{lang.name}</span>
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </div>
+        
         {savedStickers.length > 0 && (
           <motion.button
             onClick={() => setShowStickersModal(true)}
@@ -533,8 +592,8 @@ export default function Home() {
             whileTap={{ scale: 0.95 }}
             className="rounded-full border-2 border-[#3B82F6] bg-white px-4 py-2 text-sm font-bold text-[#3B82F6] shadow-lg transition-all hover:bg-[#3B82F6] hover:text-white"
           >
-            <span className="hidden sm:inline">My Stickers</span>
-            <span className="sm:hidden">Stickers</span>
+            <span className="hidden sm:inline">{t.stickers.title}</span>
+            <span className="sm:hidden">{t.stickers.title}</span>
           </motion.button>
         )}
         {user ? (
@@ -553,7 +612,7 @@ export default function Home() {
             >
               <div className="flex items-center gap-2">
                 <LogOut className="h-4 w-4 text-gray-600" />
-                <span className="hidden sm:inline text-sm font-semibold text-gray-700">Sign Out</span>
+                <span className="hidden sm:inline text-sm font-semibold text-gray-700">{t.nav.signOut}</span>
               </div>
             </motion.button>
           </div>
@@ -565,7 +624,7 @@ export default function Home() {
                 whileTap={{ scale: 0.95 }}
                 className="rounded-full border-2 border-gray-200 bg-white px-3 py-2 text-sm font-bold text-gray-700 shadow-lg transition-all hover:border-gray-300 sm:px-5"
               >
-                Login
+                {t.nav.signIn}
               </motion.button>
             </Link>
             <Link href="/signup">
@@ -574,7 +633,7 @@ export default function Home() {
                 whileTap={{ scale: 0.95 }}
                 className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-3 py-2 text-sm font-bold text-white shadow-lg transition-all hover:shadow-xl sm:px-5"
               >
-                Sign Up
+                {t.nav.signUp}
               </motion.button>
             </Link>
           </>
@@ -591,9 +650,9 @@ export default function Home() {
           {/* Headline */}
           <div className="text-center">
             <h1 className="mb-2 text-4xl font-extrabold leading-[0.95] tracking-[-0.05em] text-gray-900 md:mb-3 md:text-6xl">
-              Turn Your Photo<br />
+              {t.hero.title}<br />
               <span className="bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] bg-clip-text text-transparent">
-                INTO A STICKER!
+                {t.hero.titleHighlight}
               </span>
             </h1>
           </div>
@@ -614,7 +673,7 @@ export default function Home() {
           >
             <div className="flex items-center gap-2 md:gap-3">
               <Upload className="h-5 w-5 md:h-6 md:w-6" strokeWidth={3} />
-              Upload photo
+              {t.hero.uploadPrompt}
             </div>
           </motion.button>
 
@@ -653,7 +712,7 @@ export default function Home() {
                 whileTap={{ scale: isGenerating ? 1 : 0.95 }}
                 className="w-full rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-6 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 md:px-8 md:py-4 md:text-lg"
               >
-                {isGenerating ? 'Generating Your Sticker...' : 'Generate Sticker!'}
+                {isGenerating ? t.hero.generating : t.hero.cta}
               </motion.button>
 
 
@@ -669,14 +728,14 @@ export default function Home() {
             whileTap={{ scale: 0.95 }}
             className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-base font-bold text-white shadow-[0_10px_30px_rgba(59,130,246,0.4)] transition-all hover:shadow-[0_15px_40px_rgba(59,130,246,0.5)] md:px-12 md:py-4 md:text-lg"
           >
-            Learn How It Works →
+            {t.nav.howItWorks} →
           </motion.button>
         </div>
 
         {/* Testimonials Section */}
         <section className="mb-8 md:mb-12">
           <h2 className="mb-3 text-center text-3xl font-bold tracking-tight text-gray-900 md:mb-5 md:text-4xl">
-            What our creators say
+            {t.testimonials.title}
           </h2>
 
           <div className="flex flex-col gap-3 md:grid md:grid-cols-1 md:gap-4">
@@ -733,10 +792,10 @@ export default function Home() {
           className="mb-6 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm md:mb-8 md:rounded-3xl md:p-10"
         >
           <h3 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 md:mb-3 md:text-3xl">
-            Ready to create your stickers?
+            {t.cta.title}
           </h3>
           <p className="mb-4 text-sm text-gray-600 md:mb-5 md:text-base">
-            Join 150K+ happy creators and transform your photos in seconds
+            {t.cta.subtitle}
           </p>
 
           <motion.button
@@ -745,7 +804,7 @@ export default function Home() {
             whileTap={{ scale: 0.95 }}
             className="rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-8 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl md:px-10 md:py-4 md:text-lg"
           >
-            Get Started
+            {t.cta.button}
           </motion.button>
         </motion.section>
 
@@ -753,19 +812,19 @@ export default function Home() {
         <footer className="border-t border-gray-200 pt-4 text-center md:pt-6">
           <div className="mb-3 flex justify-center gap-4 text-xs font-medium md:mb-4 md:gap-8 md:text-sm">
             <a href="#" className="text-gray-600 transition-colors hover:text-gray-900">
-              About
+              {t.footer.about}
             </a>
             <a href="#" className="text-gray-600 transition-colors hover:text-gray-900">
-              Contact
+              {t.footer.contact}
             </a>
             <a href="#" className="text-gray-600 transition-colors hover:text-gray-900">
-              Privacy
+              {t.footer.privacy}
             </a>
             <a href="#" className="text-gray-600 transition-colors hover:text-gray-900">
-              Terms
+              {t.footer.terms}
             </a>
           </div>
-          <p className="text-xs text-gray-500 md:text-sm">© 2024 CustomStickerPack. All rights reserved.</p>
+          <p className="text-xs text-gray-500 md:text-sm">{t.footer.rights}</p>
         </footer>
 
       </div>

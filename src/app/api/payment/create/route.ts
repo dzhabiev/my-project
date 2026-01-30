@@ -40,15 +40,7 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
 
-    console.log('CryptoCloud response status:', response.status);
-    console.log('CryptoCloud response data:', data);
-
     if (!response.ok || data.status !== 'success') {
-      console.error('CryptoCloud error:', {
-        status: response.status,
-        statusText: response.statusText,
-        data: data
-      });
       return NextResponse.json(
         { 
           error: 'Failed to create payment', 
@@ -71,7 +63,6 @@ export async function POST(request: NextRequest) {
       currency: 'USD',
     });
   } catch (error) {
-    console.error('Error creating payment:', error);
     return NextResponse.json(
       {
         error: 'Failed to create payment',

@@ -1,19 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { getTranslation, Language } from '@/utils/i18n';
 
 export default function Login() {
+  const [language, setLanguage] = useState<Language>('en');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
+  
+  const t = getTranslation(language);
+  
+  // Load language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('language') as Language;
+    if (savedLang) {
+      setLanguage(savedLang);
+    }
+  }, []);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,9 +76,9 @@ export default function Login() {
         >
           <div className="text-center mb-8">
             <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 mb-2">
-              Welcome Back
+              {t.login.title}
             </h1>
-            <p className="text-gray-600">Sign in to your account</p>
+            <p className="text-gray-600">{t.login.subtitle}</p>
           </div>
 
           <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-lg">
@@ -79,7 +91,7 @@ export default function Login() {
             <form onSubmit={handleEmailLogin} className="space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email
+                  {t.login.email}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
@@ -97,7 +109,7 @@ export default function Login() {
 
               <div>
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Password
+                  {t.login.password}
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
@@ -121,7 +133,7 @@ export default function Login() {
                 className="w-full rounded-full bg-gradient-to-r from-[#3B82F6] to-[#06B6D4] px-6 py-3 text-base font-bold text-white shadow-lg transition-all hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <div className="flex items-center justify-center gap-2">
-                  {loading ? 'Signing in...' : 'Sign in'}
+                  {loading ? t.login.signIn + '...' : t.login.signIn}
                   {!loading && <ArrowRight className="h-5 w-5" />}
                 </div>
               </motion.button>
@@ -129,7 +141,7 @@ export default function Login() {
 
             <div className="my-6 flex items-center">
               <div className="h-px flex-1 bg-gray-200"></div>
-              <span className="px-4 text-sm text-gray-500">or</span>
+              <span className="px-4 text-sm text-gray-500">{t.login.orContinue}</span>
               <div className="h-px flex-1 bg-gray-200"></div>
             </div>
 
@@ -159,14 +171,14 @@ export default function Login() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                Continue with Google
+                {t.login.google}
               </div>
             </motion.button>
 
             <p className="mt-6 text-center text-sm text-gray-600">
-              Don't have an account?{' '}
+              {t.login.noAccount}{' '}
               <Link href="/signup" className="font-semibold text-[#3B82F6] hover:underline">
-                Sign up
+                {t.login.signUp}
               </Link>
             </p>
           </div>
