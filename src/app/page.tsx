@@ -256,6 +256,27 @@ export default function Home() {
     }
   }, [user]);
 
+  // Claim guest sticker after login/signup
+  const claimGuestSticker = async () => {
+    const guestStickerId = localStorage.getItem('guestStickerId');
+    if (guestStickerId) {
+      try {
+        const response = await fetch('/api/stickers/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stickerId: guestStickerId }),
+        });
+        
+        if (response.ok) {
+          // Remove from localStorage after successful claim
+          localStorage.removeItem('guestStickerId');
+        }
+      } catch (error) {
+        console.error('Error claiming guest sticker:', error);
+      }
+    }
+  };
+
   // Check for user session
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session }, error }) => {
@@ -270,8 +291,11 @@ export default function Home() {
       
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadUserStickers(session.user.id);
-        checkSuperAdmin(session.user.id);
+        // First claim guest sticker if exists
+        claimGuestSticker().then(() => {
+          loadUserStickers(session.user.id);
+          checkSuperAdmin(session.user.id);
+        });
       } else {
         // Not logged in - check for guest sticker
         loadGuestSticker();
@@ -299,8 +323,11 @@ export default function Home() {
       
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadUserStickers(session.user.id);
-        checkSuperAdmin(session.user.id);
+        // Claim guest sticker on sign in
+        claimGuestSticker().then(() => {
+          loadUserStickers(session.user.id);
+          checkSuperAdmin(session.user.id);
+        });
       } else {
         setSavedStickers([]);
         setIsSuperAdmin(false);
