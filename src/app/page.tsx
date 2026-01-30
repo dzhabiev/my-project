@@ -979,10 +979,10 @@ export default function Home() {
                     <img
                       src={`/api/proxy-image?id=${sticker.id}`}
                       alt={`Sticker ${index + 1}`}
-                      className={`h-full w-full object-cover ${!sticker.is_unlocked ? 'blur-sm' : ''}`}
+                      className="h-full w-full object-cover"
                     />
                     {!sticker.is_unlocked && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                      <div className="absolute inset-0 flex items-center justify-center bg-transparent">
                         <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
@@ -1001,7 +1001,7 @@ export default function Home() {
                   <img
                     src={`/api/proxy-image?id=${savedStickers[selectedStickerIndex].id}`}
                     alt="Generated Sticker"
-                    className={`w-full rounded-lg object-contain ${!savedStickers[selectedStickerIndex].is_unlocked && !isAdmin ? 'blur-sm' : ''}`}
+                    className="w-full rounded-lg object-contain"
                   />
                   
                   {/* Lock Overlay - Hidden for Admin or unlocked stickers */}
